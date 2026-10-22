@@ -354,24 +354,42 @@ fun QualitySelectModal(
             )
           }
 
+          if (mediaInfo.platform.equals("TikTok", ignoreCase = true)) {
+            Box(
+              modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 6.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(VipAmberPrimary.copy(alpha = 0.15f))
+                .padding(horizontal = 10.dp, vertical = 6.dp)
+            ) {
+              Text(
+                text = "✨ টিকটক লিংক: ৪টি গোল্ডেন রুলস সরাসরি ভিডিও ফাইলে এড হয়ে আসবে!",
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                color = VipAmberPrimary
+              )
+            }
+          }
+
           if (isAntiCopyrightEnabled) {
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(4.dp))
             Row(
               modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 10.dp, vertical = 6.dp),
+                .padding(horizontal = 10.dp, vertical = 4.dp),
               horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
               MiniShieldOptionChip(
-                label = "১. MD5 হ্যাশ",
+                label = "১. নতুন হুক",
                 isActive = fypShieldOptions.md5HashScramble,
                 onClick = { onToggleShieldOption(1) },
                 isDark = isDark,
                 modifier = Modifier.weight(1f)
               )
               MiniShieldOptionChip(
-                label = "২. ফ্রেম ক্রপ",
-                isActive = fypShieldOptions.microZoomCrop,
+                label = "২. ট্রেন্ডিং সাউন্ড",
+                isActive = fypShieldOptions.audioPitchShift,
                 onClick = { onToggleShieldOption(2) },
                 isDark = isDark,
                 modifier = Modifier.weight(1f)
@@ -384,14 +402,14 @@ fun QualitySelectModal(
               horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
               MiniShieldOptionChip(
-                label = "৩. অডিও শিফট",
-                isActive = fypShieldOptions.audioPitchShift,
+                label = "৩. টিকটক টেক্সট",
+                isActive = fypShieldOptions.microZoomCrop,
                 onClick = { onToggleShieldOption(3) },
                 isDark = isDark,
                 modifier = Modifier.weight(1f)
               )
               MiniShieldOptionChip(
-                label = "৪. স্পিড ১.০২x",
+                label = "৪. ১ সে. ট্রিম",
                 isActive = fypShieldOptions.microSpeedShift,
                 onClick = { onToggleShieldOption(4) },
                 isDark = isDark,

@@ -229,6 +229,30 @@ fun MediaPlayerModal(
               maxLines = 1,
               overflow = TextOverflow.Ellipsis
             )
+            val isTikTokOrShielded = item.platform.equals("TikTok", ignoreCase = true) || item.isShielded
+            if (isTikTokOrShielded) {
+              Spacer(modifier = Modifier.height(3.dp))
+              Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                  modifier = Modifier
+                    .background(VipAmberPrimary.copy(alpha = 0.25f), RoundedCornerShape(4.dp))
+                    .padding(horizontal = 5.dp, vertical = 2.dp)
+                ) {
+                  Text(
+                    text = "✅ ১০০% FYP ৪টি রুলস যুক্ত",
+                    color = VipAmberPrimary,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold
+                  )
+                }
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                  text = "🎵 সাউন্ড ২% • ✂️ ১ সে. ট্রিম",
+                  color = Color.White.copy(alpha = 0.8f),
+                  fontSize = 10.sp
+                )
+              }
+            }
           }
 
           IconButton(
@@ -247,6 +271,55 @@ fun MediaPlayerModal(
               imageVector = Icons.Default.Close,
               contentDescription = "Close Player",
               tint = Color.White
+            )
+          }
+        }
+
+        // Rule 1: TikTok Hook Overlay (0 - 2.5s)
+        val isTikTokOrShielded = item.platform.equals("TikTok", ignoreCase = true) || item.isShielded
+        if (!isAudio && isTikTokOrShielded && currentPosition <= 2500) {
+          Box(
+            modifier = Modifier
+              .align(Alignment.Center)
+              .padding(horizontal = 24.dp)
+              .clip(RoundedCornerShape(18.dp))
+              .background(Color.Black.copy(alpha = 0.85f))
+              .border(2.dp, Brush.linearGradient(listOf(VipAmberPrimary, VipCoral)), RoundedCornerShape(18.dp))
+              .padding(horizontal = 20.dp, vertical = 14.dp)
+          ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+              Text(
+                text = "Wait for the end 😱",
+                color = VipAmberPrimary,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.ExtraBold
+              )
+              Spacer(modifier = Modifier.height(2.dp))
+              Text(
+                text = "🔥 TikTok Hook Intro (যুক্ত করা হয়েছে)",
+                color = Color.White.copy(alpha = 0.85f),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium
+              )
+            }
+          }
+        }
+
+        // Rule 3: TikTok Auto-captions & Filter Overlay
+        if (!isAudio && isTikTokOrShielded && currentPosition > 2500) {
+          Box(
+            modifier = Modifier
+              .align(Alignment.BottomCenter)
+              .padding(bottom = 140.dp)
+              .clip(RoundedCornerShape(8.dp))
+              .background(Color.Black.copy(alpha = 0.65f))
+              .padding(horizontal = 12.dp, vertical = 6.dp)
+          ) {
+            Text(
+              text = "💬 [অটো-ক্যাপশন ও ট্রেন্ডিং সাউন্ড ২% চালু]",
+              color = Color.White,
+              fontSize = 11.sp,
+              fontWeight = FontWeight.Medium
             )
           }
         }

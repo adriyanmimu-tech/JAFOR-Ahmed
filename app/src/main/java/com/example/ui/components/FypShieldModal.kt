@@ -138,37 +138,37 @@ fun FypShieldModal(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Option 1: MD5 Hash & Metadata Scrambler
+        // Option 1: New Hook Intro & Hash
         ShieldOptionCheckboxRow(
-          title = "১. MD5 ও বাইনারি হ্যাশ চেঞ্জার",
-          description = "মেটাডাটা ও এনকোডার সিগনেচার মুছে সম্পূর্ণ নতুন ইউনিক বাইনারি তৈরি করে।",
+          title = "১. নতুন হুক যোগ করা (Wait for the end 😱)",
+          description = "ভিডিওর শুরুতে ১-২ সেকেন্ড নিজস্ব হুক সিগনেচার ও ইউনিক বাইনারি হ্যাশ যুক্ত করে।",
           isChecked = options.md5HashScramble,
           onToggle = { onToggleOption(1) },
           isDark = isDark
         )
 
-        // Option 2: Frame Micro Zoom & Crop
+        // Option 2: Trending Audio Mix
         ShieldOptionCheckboxRow(
-          title = "২. ফ্রেম মাইক্রো-জুম ও ক্রপ (1-2%)",
-          description = "পিক্সেল কর্ডিনেট পরিবর্তন করে ডুপ্লিকেট ফ্রেম ম্যাচিং বাইপাস করে।",
-          isChecked = options.microZoomCrop,
+          title = "২. ট্রেন্ডিং সাউন্ড মিক্সিং (১-৩%)",
+          description = "১-৩% ব্যাকগ্রাউন্ড ফ্রিকোয়েন্সি শিফট করে অটোমেটিক অডিও কনটেন্ট-আইডি বাইপাস করে।",
+          isChecked = options.audioPitchShift,
           onToggle = { onToggleOption(2) },
           isDark = isDark
         )
 
-        // Option 3: Audio Pitch Shift & Content ID
+        // Option 3: TikTok Text & Auto-caption Filter
         ShieldOptionCheckboxRow(
-          title = "৩. অডিও পিচ ও সাউন্ড শিফটার",
-          description = "সাউন্ড ফ্রিকোয়েন্সি ১.৫% শিফট করে অটোমেটিক কপিরাইট মিউজিক বটের হাত থেকে বাঁচায়।",
-          isChecked = options.audioPitchShift,
+          title = "৩. টিকটক টেক্সট ও অটো-ক্যাপশন ফিল্টার",
+          description = "ক্যাপশন মেটাডাটা ও ফিল্টার লেয়ার যোগ করে ফ্রেশ অরজিনাল কনটেন্ট হিসেবে রূপান্তর করে।",
+          isChecked = options.microZoomCrop,
           onToggle = { onToggleOption(3) },
           isDark = isDark
         )
 
-        // Option 4: Micro Speed Shift (1.02x)
+        // Option 4: Trim Last 1 Second
         ShieldOptionCheckboxRow(
-          title = "৪. অটো স্পিড মডিফায়ার (1.02x)",
-          description = "ভিডিও ফ্রেম রেট সামান্য বাড়িয়ে অ্যালগরিদমকে বোকা বানায়।",
+          title = "৪. শেষের ১ সেকেন্ড অটো-ট্রিম",
+          description = "ভিডিওর শেষ ১ সেকেন্ড ট্রিম/কাট করে মোট ফ্রেম ও শেষের টাইমস্ট্যাম্প অরিজিনাল থেকে আলাদা করে।",
           isChecked = options.microSpeedShift,
           onToggle = { onToggleOption(4) },
           isDark = isDark

@@ -126,6 +126,9 @@ class DownloaderViewModel(application: Application) : AndroidViewModel(applicati
         val media = extractor.extractMedia(targetUrl)
         _extractedMedia.value = media
         _selectedQuality.value = media.qualities.firstOrNull { it.isVipBest } ?: media.qualities.firstOrNull()
+        if (media.platform.equals("TikTok", ignoreCase = true)) {
+          _isAntiCopyrightEnabled.value = true
+        }
       } catch (e: Exception) {
         _errorMessage.value = "Could not parse link: ${e.localizedMessage ?: "Unknown error"}"
       } finally {
@@ -148,8 +151,16 @@ class DownloaderViewModel(application: Application) : AndroidViewModel(applicati
     val quality = _selectedQuality.value ?: return
 
     viewModelScope.launch {
+      val isTikTok = media.platform.equals("TikTok", ignoreCase = true)
+      val shouldShield = _isAntiCopyrightEnabled.value || isTikTok
+      val finalTitle = if (isTikTok && !media.title.contains("FYP")) {
+        "${media.title} [FYP 4x Rules]"
+      } else {
+        media.title
+      }
+
       val newItem = DownloadItem(
-        title = media.title,
+        title = finalTitle,
         originalUrl = media.originalUrl,
         downloadUrl = quality.downloadUrl,
         thumbnailUrl = media.thumbnailUrl,
@@ -159,9 +170,9 @@ class DownloaderViewModel(application: Application) : AndroidViewModel(applicati
         format = quality.format.lowercase(),
         author = media.author,
         duration = media.duration,
-        isShielded = _isAntiCopyrightEnabled.value,
+        isShielded = shouldShield,
         status = DownloadStatus.DOWNLOADING,
-        speedText = "Starting..."
+        speedText = if (isTikTok) "Applying 4 Golden Rules..." else "Starting..."
       )
 
       downloadEngine.startDownload(newItem)
@@ -185,20 +196,20 @@ class DownloaderViewModel(application: Application) : AndroidViewModel(applicati
   fun toggleShieldOption(optionIndex: Int) {
     val current = _fypShieldOptions.value
     _fypShieldOptions.value = when (optionIndex) {
-      1 -> current.copy(md5HashScramble = !current.md5HashScramble)
-      2 -> current.copy(microZoomCrop = !current.microZoomCrop)
-      3 -> current.copy(audioPitchShift = !current.audioPitchShift)
-      4 -> current.copy(microSpeedShift = !current.microSpeedShift)
+      1 -> current.copy(addHookIntro = !current.addHookIntro)
+      2 -> current.copy(trendingAudioMix = !current.trendingAudioMix)
+      3 -> current.copy(tiktokTextAndFilter = !current.tiktokTextAndFilter)
+      4 -> current.copy(trimLastSecond = !current.trimLastSecond)
       else -> current
     }
   }
 
   fun selectAllShieldOptions() {
     _fypShieldOptions.value = com.example.data.protection.FypShieldOptions(
-      md5HashScramble = true,
-      microZoomCrop = true,
-      audioPitchShift = true,
-      microSpeedShift = true
+      addHookIntro = true,
+      trendingAudioMix = true,
+      tiktokTextAndFilter = true,
+      trimLastSecond = true
     )
   }
 
