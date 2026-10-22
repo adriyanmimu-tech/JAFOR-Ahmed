@@ -7,6 +7,9 @@ on:
     branches: [ "**" ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Build & Export APK
@@ -21,7 +24,6 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
-          cache: 'gradle'
 
       - name: Prepare Keystore & Environment
         run: |
@@ -63,9 +65,29 @@ jobs:
       - name: Build APK with Gradle
         run: ./gradlew assembleDebug --stacktrace --no-daemon
 
+      - name: Prepare APK Files
+        run: |
+          mkdir -p build-apks
+          cp app/build/outputs/apk/debug/app-debug.apk build-apks/VidMax-VIP.apk
+          echo "APK successfully compiled and copied to build-apks/VidMax-VIP.apk"
+          ls -la build-apks/
+
       - name: Upload APK as Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: VidMax-VIP-debug-apk
-          path: app/build/outputs/apk/debug/*.apk
+          name: VidMax-VIP-APK
+          path: build-apks/VidMax-VIP.apk
           retention-days: 30
+
+      - name: Create GitHub Release with Direct APK Download
+        uses: softprops/action-gh-release@v2
+        continue-on-error: true
+        with:
+          tag_name: "v1.0-build-${{ github.run_number }}"
+          name: "VidMax VIP APK (Build ${{ github.run_number }})"
+          body: "Direct download link for VidMax VIP Android APK with 4x FYP Golden Rules & Social Media Downloader."
+          files: build-apks/VidMax-VIP.apk
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
