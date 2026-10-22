@@ -75,7 +75,7 @@ jobs:
       - name: Upload APK as Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: VidMax-VIP-APK
+          name: VidMax-VID-APK
           path: build-apks/VidMax-VIP.apk
           retention-days: 30
 
