@@ -3,8 +3,6 @@ name: Build Android APK
 on:
   push:
     branches: [ "**" ]
-  pull_request:
-    branches: [ "**" ]
   workflow_dispatch:
 
 permissions:
@@ -27,15 +25,10 @@ jobs:
 
       - name: Prepare Keystore & Environment
         run: |
-          # 1. Decode debug.keystore from base64 if available
           if [ -f debug.keystore.base64 ]; then
-            echo "Decoding debug.keystore from base64..."
             base64 -d debug.keystore.base64 > debug.keystore || true
           fi
-
-          # 2. If debug.keystore still does not exist, generate one using keytool
           if [ ! -f debug.keystore ] || [ ! -s debug.keystore ]; then
-            echo "Generating fresh debug.keystore via keytool..."
             keytool -genkey -v -keystore debug.keystore \
               -alias androiddebugkey \
               -keyalg RSA \
@@ -45,49 +38,35 @@ jobs:
               -keypass android \
               -dname "CN=Android Debug,O=Android,C=US"
           fi
-
-          # 3. Copy to ~/.android/ directory as standard Android fallback
           mkdir -p ~/.android
           cp debug.keystore ~/.android/debug.keystore 2>/dev/null || true
-
-          # 4. Verify keystore existence
-          echo "Verified Keystore:"
-          ls -la debug.keystore
-
-          # 5. Ensure .env exists to satisfy Secrets Gradle Plugin
           if [ ! -f .env ]; then
-            cp .env.example .env 2>/dev/null || touch .env
+            touch .env
           fi
 
-      - name: Grant Execute Permission for Gradlew
+      - name: Grant Execute Permission
         run: chmod +x gradlew
 
       - name: Build APK with Gradle
-        run: ./gradlew assembleDebug --stacktrace --no-daemon
+        run: ./gradlew assembleDebug --no-daemon
 
-      - name: Prepare APK Files
+      - name: Prepare APK
         run: |
           mkdir -p build-apks
           cp app/build/outputs/apk/debug/app-debug.apk build-apks/VidMax-VIP.apk
-          echo "APK successfully compiled and copied to build-apks/VidMax-VIP.apk"
-          ls -la build-apks/
 
-      - name: Upload APK as Artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: VidMax-VID-APK
+          name: VidMax-VIP-APK
           path: build-apks/VidMax-VIP.apk
-          retention-days: 30
 
-      - name: Create GitHub Release with Direct APK Download
+      - name: Publish to GitHub Releases
         uses: softprops/action-gh-release@v2
         continue-on-error: true
         with:
           tag_name: "v1.0-build-${{ github.run_number }}"
-          name: "VidMax VIP APK (Build ${{ github.run_number }})"
-          body: "Direct download link for VidMax VIP Android APK with 4x FYP Golden Rules & Social Media Downloader."
+          name: "VidMax VIP APK v1.0"
           files: build-apks/VidMax-VIP.apk
-          draft: false
-          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
