@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.animation.AnimatedVisibility
@@ -74,6 +75,7 @@ fun BrowserScreen(
   var webViewRef by remember { mutableStateOf<WebView?>(null) }
   var loadProgress by remember { mutableIntStateOf(0) }
   var isPageLoading by remember { mutableStateOf(false) }
+  var detectedVideoStreamUrl by remember { mutableStateOf<String?>(null) }
 
   val bookmarks = listOf(
     Bookmark("YouTube", "https://m.youtube.com", Color(0xFFFF0000)),
@@ -260,6 +262,19 @@ fun BrowserScreen(
                     inputUrlText = it
                   }
                 }
+
+                override fun shouldInterceptRequest(
+                  view: WebView?,
+                  request: WebResourceRequest?
+                ): WebResourceResponse? {
+                  val reqUrl = request?.url?.toString() ?: ""
+                  if (isVideoStreamUrl(reqUrl)) {
+                    view?.post {
+                      detectedVideoStreamUrl = reqUrl
+                    }
+                  }
+                  return super.shouldInterceptRequest(view, request)
+                }
               }
 
               webChromeClient = object : WebChromeClient() {
@@ -280,12 +295,70 @@ fun BrowserScreen(
       }
     }
 
+    // Sniffed Video Quick Banner
+    detectedVideoStreamUrl?.let { streamUrl ->
+      Box(
+        modifier = Modifier
+          .align(Alignment.BottomCenter)
+          .padding(start = 16.dp, end = 16.dp, bottom = 150.dp)
+          .clip(RoundedCornerShape(16.dp))
+          .background(Color(0xFF131522))
+          .border(1.5.dp, VipAmberPrimary, RoundedCornerShape(16.dp))
+          .clickable {
+            viewModel.extractMedia(streamUrl)
+            viewModel.setTab(0)
+          }
+          .padding(horizontal = 16.dp, vertical = 12.dp)
+      ) {
+        Row(
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.SpaceBetween,
+          modifier = Modifier.fillMaxWidth()
+        ) {
+          Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+            Icon(
+              imageVector = Icons.Default.Download,
+              contentDescription = "Real Video Found",
+              tint = VipAmberPrimary,
+              modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            Column {
+              Text(
+                text = "🎯 আসল ভিডিও ডিটেক্ট হয়েছে!",
+                fontWeight = FontWeight.Bold,
+                fontSize = 13.sp,
+                color = VipAmberPrimary
+              )
+              Text(
+                text = "ট্যাপ করে আসল HD ভিডিও ডাউনলোড করুন",
+                fontSize = 11.sp,
+                color = Color.LightGray
+              )
+            }
+          }
+          Box(
+            modifier = Modifier
+              .background(VipAmberPrimary, RoundedCornerShape(8.dp))
+              .padding(horizontal = 10.dp, vertical = 6.dp)
+          ) {
+            Text(
+              text = "ডাউনলোড",
+              color = Color.Black,
+              fontWeight = FontWeight.Bold,
+              fontSize = 12.sp
+            )
+          }
+        }
+      }
+    }
+
     // Floating VIP Sniff & Download FAB
     FloatingActionButton(
       onClick = {
-        val detectedUrl = webViewRef?.url ?: currentUrl
-        viewModel.onUrlChange(detectedUrl)
-        viewModel.extractMedia(detectedUrl)
+        val streamToDownload = detectedVideoStreamUrl ?: webViewRef?.url ?: currentUrl
+        viewModel.onUrlChange(streamToDownload)
+        viewModel.extractMedia(streamToDownload)
         viewModel.setTab(0) // Return to home to display the quality modal
       },
       containerColor = VipAmberPrimary,
@@ -307,13 +380,22 @@ fun BrowserScreen(
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
-          text = "Sniff & Download",
+          text = if (detectedVideoStreamUrl != null) "Download Sniffed Video" else "Sniff & Download",
           fontWeight = FontWeight.Bold,
           fontSize = 14.sp
         )
       }
     }
   }
+}
+
+private fun isVideoStreamUrl(url: String): Boolean {
+  val clean = url.lowercase().substringBefore("?")
+  return clean.endsWith(".mp4") || clean.endsWith(".m4v") || clean.endsWith(".webm") ||
+         clean.endsWith(".mov") || clean.endsWith(".m3u8") ||
+         url.contains(".fbcdn.net/v/") || url.contains("tiktokcdn.com") ||
+         url.contains("video.twimg.com") || url.contains("cdninstagram.com") ||
+         url.contains("googlevideo.com/videoplayback")
 }
 
 private data class Bookmark(

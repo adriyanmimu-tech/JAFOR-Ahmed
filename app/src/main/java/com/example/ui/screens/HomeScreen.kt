@@ -420,19 +420,45 @@ fun HomeScreen(
 
             if (errorMessage != null) {
               Spacer(modifier = Modifier.height(8.dp))
-              Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                  imageVector = Icons.Default.Warning,
-                  contentDescription = "Error",
-                  tint = Color(0xFFFF5252),
-                  modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                  text = errorMessage ?: "",
-                  color = Color(0xFFFF5252),
-                  fontSize = 12.sp
-                )
+              Box(
+                modifier = Modifier
+                  .fillMaxWidth()
+                  .clip(RoundedCornerShape(10.dp))
+                  .background(Color(0x22FF5252))
+                  .border(1.dp, Color(0x66FF5252), RoundedCornerShape(10.dp))
+                  .padding(10.dp)
+              ) {
+                Column {
+                  Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                      imageVector = Icons.Default.Warning,
+                      contentDescription = "Error",
+                      tint = Color(0xFFFF5252),
+                      modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                      text = errorMessage ?: "",
+                      color = Color(0xFFFF8A80),
+                      fontSize = 12.sp,
+                      lineHeight = 16.sp
+                    )
+                  }
+                  Spacer(modifier = Modifier.height(6.dp))
+                  Button(
+                    onClick = { onNavigateToTab(1) },
+                    colors = ButtonDefaults.buttonColors(containerColor = VipAmberPrimary),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.fillMaxWidth().height(36.dp)
+                  ) {
+                    Text(
+                      text = "ব্রাউজারে ওপেন করে আসল ভিডিও নিন 🚀",
+                      fontSize = 12.sp,
+                      fontWeight = FontWeight.Bold,
+                      color = Color.Black
+                    )
+                  }
+                }
               }
             }
 
