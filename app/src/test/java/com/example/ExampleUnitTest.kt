@@ -26,6 +26,44 @@ class ExampleUnitTest {
   }
 
   @Test
+  fun qualityOptions_onlyShowDistinctAvailableStreams() {
+    val extractor = SocialMediaExtractor()
+    val sameStream = "https://cdn.example/video.mp4?token=sample"
+
+    val options = extractor.buildMultiResolutionQualities(
+      hdStream = sameStream,
+      sdStream = sameStream,
+      audioStream = sameStream,
+      platform = "TikTok"
+    )
+
+    assertEquals(1, options.size)
+    assertEquals(sameStream, options.single().downloadUrl)
+    assertTrue(options.single().isVipBest)
+    assertTrue(options.none { it.resolution.contains("4K", ignoreCase = true) })
+  }
+
+  @Test
+  fun qualityOptions_recommendBestAndKeepDistinctManualChoices() {
+    val extractor = SocialMediaExtractor()
+    val bestStream = "https://cdn.example/video-hd.mp4"
+    val standardStream = "https://cdn.example/video-sd.mp4"
+
+    val options = extractor.buildMultiResolutionQualities(
+      hdStream = bestStream,
+      sdStream = standardStream,
+      platform = "TikTok"
+    )
+    val videoOptions = options.filter { it.mediaType == MediaType.VIDEO }
+
+    assertEquals(2, videoOptions.size)
+    assertEquals(bestStream, videoOptions.first().downloadUrl)
+    assertTrue(videoOptions.first().isVipBest)
+    assertEquals(standardStream, videoOptions.last().downloadUrl)
+    assertTrue(videoOptions.none { it.resolution.contains("4K", ignoreCase = true) })
+  }
+
+  @Test
   fun downloadItem_calculatesProgressAndSize() {
     val item = DownloadItem(
       title = "VIP Test Video",

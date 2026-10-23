@@ -135,10 +135,8 @@ class DownloadEngine(
             }
           }
 
-          // Apply 4 Golden Rules without corrupting MP4 container:
-          // Uses standard ISO MP4 "free" atom boxes which players ignore safely
-          val isTikTok = item.platform.equals("TikTok", ignoreCase = true)
-          if ((item.isShielded || isTikTok) && !isAudio) {
+          // Apply the optional metadata marker only when the user enabled the shield.
+          if (item.isShielded && !isAudio) {
             val salt = ByteArray(128)
             java.security.SecureRandom().nextBytes(salt)
             val payload = "TIKTOK_HOOK_INTRO_TRENDING_AUDIO_MIX_CAPTION_FILTER_TRIM_V2_" +
