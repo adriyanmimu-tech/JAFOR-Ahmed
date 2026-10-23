@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Hd
+import androidx.compose.material.icons.filled.HighQuality
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.PlayArrow
@@ -143,7 +144,7 @@ fun QualitySelectModal(
             Column {
               Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                  text = "ভিডিও ডিটেলস ও কোয়ালিটি",
+                  text = "Media Details & Quality",
                   fontSize = 16.sp,
                   fontWeight = FontWeight.Bold,
                   color = if (isDark) Color.White else Color(0xFF0F172A)
@@ -163,7 +164,7 @@ fun QualitySelectModal(
                 }
               }
               Text(
-                text = "উৎস: ${mediaInfo.platform} • 4K টার্বো ইন্সপেক্টর",
+                text = "Source: ${mediaInfo.platform} • 4K Turbo Inspector",
                 fontSize = 11.sp,
                 color = Color(0xFF34D399),
                 fontWeight = FontWeight.Medium
@@ -208,7 +209,7 @@ fun QualitySelectModal(
               )
               Spacer(modifier = Modifier.width(8.dp))
               Text(
-                text = "ভিডিও হায়েস্ট কোয়ালিটি: 4K 2160p (60 FPS)",
+                text = "Highest Quality: 4K 2160p (60 FPS)",
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 color = if (isDark) Color.White else Color(0xFF0F172A)
@@ -231,7 +232,7 @@ fun QualitySelectModal(
 
         Spacer(modifier = Modifier.height(14.dp))
 
-        // DEDICATED TITLE & CAPTION BOX WITH 1-TAP COPY (ব্যবহারকারীর বিশেষ চাহিদা অনুযায়ী)
+        // DEDICATED TITLE & CAPTION BOX WITH 1-TAP COPY
         GlassCard(
           isDark = isDark,
           modifier = Modifier.fillMaxWidth(),
@@ -302,7 +303,7 @@ fun QualitySelectModal(
                 }
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                  text = "✓ অরিজিনাল সাউন্ড ও ফুল কোয়ালিটি",
+                  text = "✓ Original Audio & High Fidelity",
                   fontSize = 11.sp,
                   color = Color(0xFF10B981),
                   fontWeight = FontWeight.Medium
@@ -323,7 +324,7 @@ fun QualitySelectModal(
             ) {
               Column {
                 Text(
-                  text = "ভিডিওর আসল টাইটেল ও ক্যাপশন:",
+                  text = "Original Video Title & Caption:",
                   fontSize = 11.sp,
                   fontWeight = FontWeight.Bold,
                   color = VipAmberPrimary
@@ -349,7 +350,7 @@ fun QualitySelectModal(
                 val clip = ClipData.newPlainText("Video Caption", mediaInfo.title)
                 clipboard.setPrimaryClip(clip)
                 isCaptionCopied = true
-                Toast.makeText(context, "ভিডিওর ক্যাপশন ক্লিপবোর্ডে কপি হয়েছে! 📋", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Video caption copied to clipboard! 📋", Toast.LENGTH_SHORT).show()
                 coroutineScope.launch {
                   delay(2500)
                   isCaptionCopied = false
@@ -369,7 +370,7 @@ fun QualitySelectModal(
               )
               Spacer(modifier = Modifier.width(8.dp))
               Text(
-                text = if (isCaptionCopied) "✓ টাইটেল ও ক্যাপশন কপি হয়েছে!" else "📋 টাইটেল ও ক্যাপশন কপি করুন",
+                text = if (isCaptionCopied) "✓ Caption Copied!" else "📋 Copy Title & Caption",
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold
               )
@@ -379,20 +380,20 @@ fun QualitySelectModal(
 
         Spacer(modifier = Modifier.height(14.dp))
 
-        // INTERACTIVE QUALITY SELECTION (ব্যবহারকারী যাতে সহজে কোয়ালিটি বেছে নিতে পারে)
+        // INTERACTIVE QUALITY SELECTION
         Row(
           modifier = Modifier.fillMaxWidth(),
           horizontalArrangement = Arrangement.SpaceBetween,
           verticalAlignment = Alignment.CenterVertically
         ) {
           Text(
-            text = "কোয়ালিটি সিলেক্ট করুন:",
+            text = "Select Quality:",
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
             color = if (isDark) Color.White else Color(0xFF0F172A)
           )
           Text(
-            text = "ট্যাপ করে বেছে নিন",
+            text = "Tap to choose",
             fontSize = 11.sp,
             color = VipAmberPrimary,
             fontWeight = FontWeight.SemiBold
@@ -467,7 +468,7 @@ fun QualitySelectModal(
                   )
                   Spacer(modifier = Modifier.width(6.dp))
                   Text(
-                    text = "৪টি ট্রিক",
+                    text = "4 FYP Rules",
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
                     color = VipAmberPrimary,
@@ -478,7 +479,7 @@ fun QualitySelectModal(
                   )
                 }
                 Text(
-                  text = "ইউনিক ফাইল হ্যাশ ও অ্যান্টি-কপিরাইট প্রোটেকশন",
+                  text = "Unique file hash & anti-copyright protection",
                   fontSize = 10.sp,
                   color = if (isDark) Color(0xFFA5ABB8) else Color(0xFF6B7280),
                   lineHeight = 13.sp
@@ -530,7 +531,7 @@ fun QualitySelectModal(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-              text = "ডাউনলোড শুরু করুন ($currentQualityLabel • $currentFormat$currentSize)",
+              text = "Start Download ($currentQualityLabel • $currentFormat$currentSize)",
               fontSize = 14.sp,
               fontWeight = FontWeight.Bold
             )

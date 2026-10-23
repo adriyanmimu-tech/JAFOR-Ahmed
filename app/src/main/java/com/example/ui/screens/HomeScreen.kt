@@ -35,6 +35,7 @@ import androidx.compose.material.icons.filled.Audiotrack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.DarkMode
@@ -54,10 +55,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -115,10 +118,16 @@ fun HomeScreen(
   val allDownloads by viewModel.allDownloads.collectAsState()
 
   var homeCaptionCopied by remember { mutableStateOf(false) }
-  var preferredQualityTag by remember { mutableStateOf("4K Ultra HD") }
 
-  val activeOrRecent = remember(allDownloads) {
-    allDownloads.firstOrNull { it.status == DownloadStatus.DOWNLOADING || it.status == DownloadStatus.COMPLETED }
+  LaunchedEffect(Unit) {
+    try {
+      val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+      val clip = clipboard.primaryClip
+      if (clip != null && clip.itemCount > 0) {
+        val text = clip.getItemAt(0).text?.toString()
+        viewModel.checkClipboard(text)
+      }
+    } catch (_: Exception) {}
   }
 
   GlassmorphicBackground(isDark = isDark) {
@@ -295,7 +304,7 @@ fun HomeScreen(
                       if (text.startsWith("http")) {
                         viewModel.onUrlChange(text)
                         viewModel.extractMedia(text)
-                        Toast.makeText(context, "লিংক সনাক্ত করা হয়েছে!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Link detected!", Toast.LENGTH_SHORT).show()
                       }
                     }
                   },
@@ -471,69 +480,90 @@ fun HomeScreen(
               }
             }
           }
+        }
+      }
 
-          // Floating Card 2: "Recent downloads" with dynamic progress bar
+      // --- SMART AUTO-CLIPBOARD DETECTION BANNER ---
+      if (clipboardCandidate != null) {
+        item {
+          val candidateUrl = clipboardCandidate ?: ""
+          val platformName = when {
+            candidateUrl.contains("tiktok.com", true) -> "TikTok"
+            candidateUrl.contains("youtube.com", true) || candidateUrl.contains("youtu.be", true) -> "YouTube"
+            candidateUrl.contains("instagram.com", true) -> "Instagram"
+            candidateUrl.contains("facebook.com", true) || candidateUrl.contains("fb.watch", true) -> "Facebook"
+            candidateUrl.contains("twitter.com", true) || candidateUrl.contains("x.com", true) -> "Twitter"
+            candidateUrl.contains("pinterest.com", true) || candidateUrl.contains("pin.it", true) -> "Pinterest"
+            candidateUrl.contains("reddit.com", true) -> "Reddit"
+            candidateUrl.contains("snapchat.com", true) -> "Snapchat"
+            candidateUrl.contains("whatsapp", true) -> "WhatsApp"
+            else -> "Social Media"
+          }
+
           GlassCard(
             isDark = isDark,
-            modifier = Modifier
-              .fillMaxWidth()
-              .clickable { onNavigateToTab(2) },
+            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
-            borderWidth = 1.2.dp
+            borderColor = Color(0xFF10B981),
+            borderWidth = 1.5.dp
           ) {
             Column(
               modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 14.dp)
+                .padding(14.dp)
             ) {
               Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
               ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                  Box(
-                    modifier = Modifier
-                      .size(34.dp)
-                      .clip(CircleShape)
-                      .background(Color(0x3510B981)),
-                    contentAlignment = Alignment.Center
-                  ) {
-                    Icon(
-                      imageVector = Icons.Default.Download,
-                      contentDescription = "Recent Downloads",
-                      tint = Color(0xFF10B981),
-                      modifier = Modifier.size(18.dp)
-                    )
-                  }
+                Row(
+                  modifier = Modifier.weight(1f),
+                  verticalAlignment = Alignment.CenterVertically
+                ) {
+                  PlatformBrandIcon(platform = platformName, size = 26.dp)
                   Spacer(modifier = Modifier.width(10.dp))
                   Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                      Text(
+                        text = "Link detected in clipboard!",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF10B981)
+                      )
+                      Spacer(modifier = Modifier.width(6.dp))
+                      Box(
+                        modifier = Modifier
+                          .clip(RoundedCornerShape(4.dp))
+                          .background(Color(0x3010B981))
+                          .padding(horizontal = 6.dp, vertical = 2.dp)
+                      ) {
+                        Text(
+                          text = platformName,
+                          fontSize = 9.sp,
+                          fontWeight = FontWeight.Bold,
+                          color = Color(0xFF34D399)
+                        )
+                      }
+                    }
                     Text(
-                      text = "Recent downloads",
-                      fontSize = 13.sp,
-                      fontWeight = FontWeight.Bold,
-                      color = if (isDark) Color.White else Color(0xFF0F172A)
-                    )
-                    Text(
-                      text = activeOrRecent?.title?.take(30) ?: "Download status...",
+                      text = candidateUrl,
                       fontSize = 11.sp,
-                      color = if (isDark) Color(0xFFA7B5B0) else Color(0xFF64748B)
+                      color = if (isDark) Color(0xFFA7B5B0) else Color(0xFF64748B),
+                      maxLines = 1,
+                      overflow = TextOverflow.Ellipsis
                     )
                   }
                 }
 
-                // Chevron to open Downloads
-                Box(
-                  modifier = Modifier
-                    .size(28.dp)
-                    .clip(CircleShape)
-                    .background(Color(0x2234D399)),
-                  contentAlignment = Alignment.Center
+                IconButton(
+                  onClick = { viewModel.dismissClipboardCandidate() },
+                  modifier = Modifier.size(28.dp)
                 ) {
                   Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                    contentDescription = "View all",
-                    tint = Color(0xFF34D399),
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Dismiss",
+                    tint = if (isDark) Color(0x90FFFFFF) else Color(0x90000000),
                     modifier = Modifier.size(16.dp)
                   )
                 }
@@ -541,183 +571,47 @@ fun HomeScreen(
 
               Spacer(modifier = Modifier.height(10.dp))
 
-              // Glowing green progress bar matching screenshot
-              val progressValue = activeOrRecent?.progress ?: 0.78f
-              LinearProgressIndicator(
-                progress = { progressValue },
-                modifier = Modifier
-                  .fillMaxWidth()
-                  .height(6.dp)
-                  .clip(RoundedCornerShape(3.dp)),
-                color = Color(0xFF10B981),
-                trackColor = Color(0x3010B981),
-              )
-
-              Spacer(modifier = Modifier.height(4.dp))
-
               Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
               ) {
-                Text(
-                  text = "Progress for ${activeOrRecent?.formattedSize ?: "1262 GBB"}",
-                  fontSize = 10.sp,
-                  color = if (isDark) Color(0xFFA7B5B0) else Color(0xFF64748B)
-                )
-                Text(
-                  text = "${(progressValue * 100).toInt()}% • 10x Turbo",
-                  fontSize = 10.sp,
-                  fontWeight = FontWeight.Bold,
-                  color = Color(0xFF10B981)
-                )
-              }
-            }
-          }
-        }
-      }
-
-      // --- USER REQUESTED FEATURE: MAXIMUM QUALITY CAPABILITIES & LIMITS CARD ---
-      item {
-        GlassCard(
-          isDark = isDark,
-          modifier = Modifier.fillMaxWidth(),
-          shape = RoundedCornerShape(22.dp),
-          borderColor = Color(0x6034D399),
-          borderWidth = 1.3.dp
-        ) {
-          Column(
-            modifier = Modifier
-              .fillMaxWidth()
-              .padding(16.dp)
-          ) {
-            Row(
-              modifier = Modifier.fillMaxWidth(),
-              horizontalArrangement = Arrangement.SpaceBetween,
-              verticalAlignment = Alignment.CenterVertically
-            ) {
-              Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
+                Button(
+                  onClick = { viewModel.acceptClipboardCandidate() },
                   modifier = Modifier
-                    .size(32.dp)
-                    .clip(CircleShape)
-                    .background(Color(0x3510B981)),
-                  contentAlignment = Alignment.Center
+                    .weight(1f)
+                    .height(40.dp),
+                  shape = RoundedCornerShape(10.dp),
+                  colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF10B981),
+                    contentColor = Color.Black
+                  )
                 ) {
                   Icon(
-                    imageVector = Icons.Default.HighQuality,
-                    contentDescription = "Highest Quality",
-                    tint = Color(0xFF34D399),
-                    modifier = Modifier.size(18.dp)
+                    imageVector = Icons.Default.Download,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp)
+                  )
+                  Spacer(modifier = Modifier.width(6.dp))
+                  Text(
+                    text = "Download Now",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
                   )
                 }
-                Spacer(modifier = Modifier.width(10.dp))
-                Column {
-                  Text(
-                    text = "ভিডিও হায়েস্ট ডাউনলোড কোয়ালিটি",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = if (isDark) Color.White else Color(0xFF0F172A)
+
+                OutlinedButton(
+                  onClick = { viewModel.dismissClipboardCandidate() },
+                  modifier = Modifier.height(40.dp),
+                  shape = RoundedCornerShape(10.dp),
+                  border = androidx.compose.foundation.BorderStroke(
+                    1.dp,
+                    if (isDark) Color(0x40FFFFFF) else Color(0x30000000)
                   )
-                  Text(
-                    text = "Maximum Supported Video & Audio Limits",
-                    fontSize = 10.sp,
-                    color = Color(0xFF34D399)
-                  )
-                }
-              }
-
-              // Glowing 4K Badge
-              Box(
-                modifier = Modifier
-                  .clip(RoundedCornerShape(8.dp))
-                  .background(
-                    Brush.horizontalGradient(
-                      listOf(Color(0xFF10B981), Color(0xFF00F2FE))
-                    )
-                  )
-                  .padding(horizontal = 8.dp, vertical = 3.dp)
-              ) {
-                Text(
-                  text = "MAX: 4K 60FPS",
-                  fontSize = 10.sp,
-                  fontWeight = FontWeight.Black,
-                  color = Color.Black
-                )
-              }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Limits & Specifications Matrix
-            Row(
-              modifier = Modifier.fillMaxWidth(),
-              horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-              QualityStatBox(
-                title = "সর্বোচ্চ রেজোলিউশন",
-                value = "4K UHD (2160p)",
-                desc = "60 FPS Crystal HD",
-                modifier = Modifier.weight(1f),
-                isDark = isDark
-              )
-              QualityStatBox(
-                title = "অডিও কোয়ালিটি",
-                value = "320 kbps",
-                desc = "Lossless Studio",
-                modifier = Modifier.weight(1f),
-                isDark = isDark
-              )
-              QualityStatBox(
-                title = "ডাউনলোড লিমিট",
-                value = "আনলিমিটেড",
-                desc = "10x Turbo Engine",
-                modifier = Modifier.weight(1f),
-                isDark = isDark
-              )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Preferred Resolution Selection Chips
-            Text(
-              text = "ডিফল্ট পছন্দের কোয়ালিটি নির্বাচন করুন:",
-              fontSize = 11.sp,
-              fontWeight = FontWeight.SemiBold,
-              color = if (isDark) Color(0xFFA7B5B0) else Color(0xFF475569)
-            )
-
-            Spacer(modifier = Modifier.height(6.dp))
-
-            val qualityChips = listOf("4K Ultra HD", "2K Quad HD", "1080p Full HD", "720p HD", "MP3 320k")
-            LazyRow(
-              horizontalArrangement = Arrangement.spacedBy(8.dp),
-              modifier = Modifier.fillMaxWidth()
-            ) {
-              items(qualityChips) { chip ->
-                val isSelected = preferredQualityTag == chip
-                Box(
-                  modifier = Modifier
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(
-                      if (isSelected) Color(0xFF10B981)
-                      else (if (isDark) Color(0x3015382A) else Color(0x20000000))
-                    )
-                    .border(
-                      1.dp,
-                      if (isSelected) Color(0xFF34D399) else Color(0x3034D399),
-                      RoundedCornerShape(10.dp)
-                    )
-                    .clickable {
-                      preferredQualityTag = chip
-                      Toast.makeText(context, "$chip কোয়ালিটি নির্বাচিত হয়েছে", Toast.LENGTH_SHORT).show()
-                    }
-                    .padding(horizontal = 10.dp, vertical = 6.dp)
                 ) {
                   Text(
-                    text = chip,
-                    fontSize = 11.sp,
-                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                    color = if (isSelected) Color.Black else (if (isDark) Color.White else Color(0xFF0F172A))
+                    text = "Dismiss",
+                    fontSize = 12.sp,
+                    color = if (isDark) Color.White else Color.Black
                   )
                 }
               }
@@ -748,7 +642,7 @@ fun HomeScreen(
               verticalAlignment = Alignment.CenterVertically
             ) {
               Text(
-                text = "ভিডিও লিংক পেস্ট করুন",
+                text = "Paste Video Link",
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
                 color = if (isDark) Color.White else Color(0xFF0F172A)
@@ -768,7 +662,7 @@ fun HomeScreen(
               onValueChange = { viewModel.onUrlChange(it) },
               placeholder = {
                 Text(
-                  text = "ফেসবুক, ইউটিউব, টিকটক, ইনস্টাগ্রাম লিংক পেস্ট করুন...",
+                  text = "Paste Facebook, YouTube, TikTok, Instagram link...",
                   fontSize = 12.sp,
                   color = if (isDark) Color(0xFF7E948A) else Color(0xFF94A3B8)
                 )
@@ -862,7 +756,7 @@ fun HomeScreen(
                       .height(40.dp)
                   ) {
                     Text(
-                      text = "ব্রাউজারে ওপেন করে আসল ভিডিও নিন 🚀",
+                      text = "Open in Browser & Sniff Media 🚀",
                       fontSize = 13.sp,
                       fontWeight = FontWeight.Bold
                     )
@@ -911,7 +805,7 @@ fun HomeScreen(
                   )
                   Spacer(modifier = Modifier.width(8.dp))
                   Text(
-                    text = "কোয়ালিটি দেখুন ও ডাউনলোড করুন ⚡",
+                    text = "View Qualities & Download ⚡",
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold
                   )
@@ -953,7 +847,7 @@ fun HomeScreen(
                   )
                   Spacer(modifier = Modifier.width(6.dp))
                   Text(
-                    text = "ভিডিও ডিটেলস ও কোয়ালিটি",
+                    text = "Media Details & Quality Options",
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
                     color = if (isDark) Color.White else Color(0xFF0F172A)
@@ -1050,7 +944,7 @@ fun HomeScreen(
                       )
                       Spacer(modifier = Modifier.width(6.dp))
                       Text(
-                        text = "ভিডিও টাইটেল ও ক্যাপশন",
+                        text = "Video Title & Caption",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF10B981)
@@ -1063,7 +957,7 @@ fun HomeScreen(
                         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                         clipboard.setPrimaryClip(ClipData.newPlainText("Video Caption", clipText))
                         homeCaptionCopied = true
-                        Toast.makeText(context, "ক্যাপশন কপি সফল হয়েছে! ✓", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Caption copied to clipboard! ✓", Toast.LENGTH_SHORT).show()
                         coroutineScope.launch {
                           delay(2500)
                           homeCaptionCopied = false
@@ -1084,7 +978,7 @@ fun HomeScreen(
                       )
                       Spacer(modifier = Modifier.width(4.dp))
                       Text(
-                        text = if (homeCaptionCopied) "কপিকৃত!" else "কপি করুন",
+                        text = if (homeCaptionCopied) "Copied!" else "Copy",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
                       )
@@ -1107,7 +1001,7 @@ fun HomeScreen(
               Spacer(modifier = Modifier.height(14.dp))
 
               Text(
-                text = "কোয়ালিটি সিলেক্ট করে ডাউনলোড করুন:",
+                text = "Select Quality & Format:",
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
                 color = if (isDark) Color.White else Color(0xFF0F172A)
@@ -1248,7 +1142,7 @@ fun HomeScreen(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                  text = "ডাউনলোড শুরু করুন ($currentQualityLabel • $currentFormat)",
+                  text = "Start Download ($currentQualityLabel • $currentFormat)",
                   fontSize = 13.sp,
                   fontWeight = FontWeight.Bold
                 )
@@ -1376,39 +1270,3 @@ private fun BeardedAvatar(size: Dp = 32.dp) {
   }
 }
 
-@Composable
-private fun QualityStatBox(
-  title: String,
-  value: String,
-  desc: String,
-  modifier: Modifier = Modifier,
-  isDark: Boolean = true
-) {
-  Box(
-    modifier = modifier
-      .clip(RoundedCornerShape(12.dp))
-      .background(if (isDark) Color(0x35122E23) else Color(0x2510B981))
-      .border(1.dp, Color(0x3034D399), RoundedCornerShape(12.dp))
-      .padding(8.dp)
-  ) {
-    Column {
-      Text(
-        text = title,
-        fontSize = 9.sp,
-        color = if (isDark) Color(0xFFA7B5B0) else Color(0xFF475569)
-      )
-      Spacer(modifier = Modifier.height(2.dp))
-      Text(
-        text = value,
-        fontSize = 11.sp,
-        fontWeight = FontWeight.Bold,
-        color = Color(0xFF34D399)
-      )
-      Text(
-        text = desc,
-        fontSize = 8.sp,
-        color = if (isDark) Color(0xFF7E948A) else Color(0xFF64748B)
-      )
-    }
-  }
-}

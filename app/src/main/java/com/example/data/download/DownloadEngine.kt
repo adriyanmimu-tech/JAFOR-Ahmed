@@ -24,6 +24,8 @@ class DownloadEngine(
   private val context: Context,
   private val downloadDao: DownloadDao
 ) {
+  private val notificationHelper = DownloadNotificationHelper(context)
+
   private val client = OkHttpClient.Builder()
     .connectTimeout(30, TimeUnit.SECONDS)
     .readTimeout(60, TimeUnit.SECONDS)
@@ -47,6 +49,7 @@ class DownloadEngine(
   fun pauseDownload(id: Long) {
     activeJobs[id]?.cancel()
     activeJobs.remove(id)
+    notificationHelper.cancelNotification(id)
     scope.launch {
       downloadDao.updateProgress(id, downloadedBytes = 0, totalBytes = 0, speedText = "Paused", status = DownloadStatus.PAUSED)
     }
@@ -59,6 +62,7 @@ class DownloadEngine(
   fun cancelDownload(id: Long) {
     activeJobs[id]?.cancel()
     activeJobs.remove(id)
+    notificationHelper.cancelNotification(id)
     scope.launch {
       downloadDao.deleteById(id)
     }
@@ -124,6 +128,8 @@ class DownloadEngine(
               val speedText = String.format("%.1f MB/s", speedMb.coerceAtLeast(0.1))
 
               downloadDao.updateProgress(id, totalRead, contentLength, speedText, DownloadStatus.DOWNLOADING)
+              val percent = ((totalRead * 100) / contentLength.coerceAtLeast(1L)).toInt()
+              notificationHelper.updateProgress(id, cleanTitle, percent, speedText)
               lastTime = now
               bytesSinceLastTime = 0L
             }
@@ -151,10 +157,14 @@ class DownloadEngine(
           registerMediaInSystemGallery(outputFile, cleanTitle, isAudio, mimeType)
 
           downloadDao.markCompleted(id, DownloadStatus.COMPLETED, outputFile.absolutePath)
+          notificationHelper.notifySuccess(id, cleanTitle, outputFile.absolutePath, mimeType)
         }
       } catch (e: Exception) {
         if (isActive) {
-          downloadDao.updateProgress(id, 0, 0, "Error: ${e.localizedMessage ?: "Failed"}", DownloadStatus.FAILED)
+          val errorMsg = e.localizedMessage ?: "Failed"
+          downloadDao.updateProgress(id, 0, 0, "Error: $errorMsg", DownloadStatus.FAILED)
+          val cleanTitle = item.title.take(30).ifEmpty { "Media" }
+          notificationHelper.notifyError(id, cleanTitle, errorMsg)
         }
       } finally {
         activeJobs.remove(id)

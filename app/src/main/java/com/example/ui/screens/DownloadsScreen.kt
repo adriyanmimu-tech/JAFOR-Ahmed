@@ -515,7 +515,7 @@ private fun DownloadItemRow(
               )
               Spacer(modifier = Modifier.width(4.dp))
               Text(
-                text = "গ্যালারি ও Movies/VidMax-এ সেভড",
+                text = "Saved to Gallery & Movies/VidMax",
                 fontSize = 10.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color(0xFF00E676)
@@ -555,7 +555,7 @@ private fun DownloadItemRow(
           IconButton(onClick = onOpenInGallery) {
             Icon(
               imageVector = Icons.Default.PhotoLibrary,
-              contentDescription = "গ্যালারিতে ওপেন করুন",
+              contentDescription = "Open in Gallery",
               tint = VipAmberPrimary,
               modifier = Modifier.size(20.dp)
             )
@@ -563,7 +563,7 @@ private fun DownloadItemRow(
           IconButton(onClick = onShowLocation) {
             Icon(
               imageVector = Icons.Default.Folder,
-              contentDescription = "ফাইল ম্যানেজার ও লোকেশন",
+              contentDescription = "File Location",
               tint = if (isDark) Color.White.copy(alpha = 0.85f) else Color.Black.copy(alpha = 0.75f),
               modifier = Modifier.size(20.dp)
             )
@@ -678,12 +678,12 @@ private fun openInPhoneGallery(context: Context, item: DownloadItem) {
         setDataAndType(uri, mimeType)
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
       }
-      context.startActivity(Intent.createChooser(intent, "গ্যালারি অথবা প্লেয়ারে ওপেন করুন"))
+      context.startActivity(Intent.createChooser(intent, "Open in Gallery or Player"))
     } catch (_: Exception) {
-      android.widget.Toast.makeText(context, "গ্যালারি প্লেয়ার ওপেন করা যায়নি", android.widget.Toast.LENGTH_SHORT).show()
+      android.widget.Toast.makeText(context, "Could not open video player", android.widget.Toast.LENGTH_SHORT).show()
     }
   } else {
-    android.widget.Toast.makeText(context, "ফাইলটি ডিভাইসে খুঁজে পাওয়া যায়নি", android.widget.Toast.LENGTH_SHORT).show()
+    android.widget.Toast.makeText(context, "File not found on device", android.widget.Toast.LENGTH_SHORT).show()
   }
 }
 
@@ -721,7 +721,7 @@ private fun FileLocationDialog(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-              text = "ফাইল ও গ্যালারি লোকেশন",
+              text = "File & Gallery Location",
               fontSize = 15.sp,
               fontWeight = FontWeight.Bold,
               color = MaterialTheme.colorScheme.onBackground
@@ -755,7 +755,7 @@ private fun FileLocationDialog(
         ) {
           Column {
             Text(
-              text = "📁 ডিভাইস ফাইল ম্যানেজার পাথ:",
+              text = "📁 Device Storage Path:",
               fontSize = 11.sp,
               fontWeight = FontWeight.Bold,
               color = VipAmberPrimary
@@ -780,7 +780,7 @@ private fun FileLocationDialog(
               val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
               val clip = android.content.ClipData.newPlainText("File Path", item.localFilePath ?: "")
               clipboard.setPrimaryClip(clip)
-              android.widget.Toast.makeText(context, "পাথ কপি হয়েছে!", android.widget.Toast.LENGTH_SHORT).show()
+              android.widget.Toast.makeText(context, "Path copied to clipboard!", android.widget.Toast.LENGTH_SHORT).show()
             },
             colors = ButtonDefaults.buttonColors(containerColor = if (isDark) Color(0x33FFFFFF) else Color(0x22000000)),
             shape = RoundedCornerShape(10.dp),
@@ -788,7 +788,7 @@ private fun FileLocationDialog(
           ) {
             Icon(Icons.Default.ContentCopy, contentDescription = "Copy", modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onBackground)
             Spacer(modifier = Modifier.width(6.dp))
-            Text("পাথ কপি", fontSize = 12.sp, color = MaterialTheme.colorScheme.onBackground)
+            Text("Copy Path", fontSize = 12.sp, color = MaterialTheme.colorScheme.onBackground)
           }
 
           Button(
@@ -799,7 +799,7 @@ private fun FileLocationDialog(
           ) {
             Icon(Icons.Default.PhotoLibrary, contentDescription = "Gallery", modifier = Modifier.size(16.dp), tint = Color.Black)
             Spacer(modifier = Modifier.width(6.dp))
-            Text("গ্যালারিতে ওপেন", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+            Text("Open Gallery", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.Black)
           }
         }
 
@@ -813,7 +813,7 @@ private fun FileLocationDialog(
                 arrayOf(p),
                 arrayOf(if (item.mediaType == MediaType.VIDEO) "video/mp4" else "audio/mpeg")
               ) { _, _ -> }
-              android.widget.Toast.makeText(context, "গ্যালারি ও ফাইল ম্যানেজার রিফ্রেশ সম্পন্ন!", android.widget.Toast.LENGTH_SHORT).show()
+              android.widget.Toast.makeText(context, "Gallery and file scan refreshed!", android.widget.Toast.LENGTH_SHORT).show()
             }
           },
           shape = RoundedCornerShape(10.dp),
@@ -821,7 +821,7 @@ private fun FileLocationDialog(
         ) {
           Icon(Icons.Default.Refresh, contentDescription = "Refresh", modifier = Modifier.size(16.dp), tint = VipAmberPrimary)
           Spacer(modifier = Modifier.width(6.dp))
-          Text("গ্যালারি ও ফাইল স্ক্যান রিফ্রেশ", fontSize = 11.sp, color = VipAmberPrimary)
+          Text("Refresh Gallery & File Scan", fontSize = 11.sp, color = VipAmberPrimary)
         }
       }
     }

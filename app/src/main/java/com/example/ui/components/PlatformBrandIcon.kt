@@ -75,10 +75,64 @@ fun PlatformBrandIcon(
       cleanPlatform.contains("vimeo") -> {
         VimeoIcon(size = size)
       }
+      cleanPlatform.contains("whatsapp") || cleanPlatform.contains("wa") -> {
+        WhatsAppIcon(size = size)
+      }
       else -> {
         GenericPlatformIcon(size = size)
       }
     }
+  }
+}
+
+/**
+ * Official WhatsApp Green Icon
+ */
+@Composable
+fun WhatsAppIcon(size: Dp) {
+  Canvas(modifier = Modifier.size(size)) {
+    val radius = this.size.minDimension / 2f
+    val center = Offset(this.size.width / 2f, this.size.height / 2f)
+
+    // WhatsApp Emerald Green Circle
+    drawCircle(
+      color = Color(0xFF25D366),
+      radius = radius,
+      center = center
+    )
+
+    val w = this.size.width
+    val h = this.size.height
+
+    // Speech bubble with tail
+    val bubblePath = Path().apply {
+      val bubbleRadius = w * 0.30f
+      val bubbleCenter = Offset(w * 0.5f, h * 0.47f)
+      addOval(androidx.compose.ui.geometry.Rect(
+        center = bubbleCenter,
+        radius = bubbleRadius
+      ))
+      moveTo(w * 0.36f, h * 0.68f)
+      lineTo(w * 0.22f, h * 0.77f)
+      lineTo(w * 0.29f, h * 0.60f)
+      close()
+    }
+    drawPath(bubblePath, Color.White)
+
+    // Inner green telephone handset
+    val phonePath = Path().apply {
+      moveTo(w * 0.40f, h * 0.38f)
+      cubicTo(w * 0.38f, h * 0.40f, w * 0.38f, h * 0.44f, w * 0.42f, h * 0.50f)
+      cubicTo(w * 0.46f, h * 0.56f, w * 0.50f, h * 0.58f, w * 0.54f, h * 0.56f)
+      lineTo(w * 0.58f, h * 0.52f)
+      lineTo(w * 0.54f, h * 0.46f)
+      lineTo(w * 0.51f, h * 0.48f)
+      cubicTo(w * 0.49f, h * 0.49f, w * 0.47f, h * 0.47f, w * 0.45f, h * 0.45f)
+      lineTo(w * 0.42f, h * 0.42f)
+      lineTo(w * 0.44f, h * 0.39f)
+      close()
+    }
+    drawPath(phonePath, Color(0xFF25D366))
   }
 }
 

@@ -69,13 +69,13 @@ fun FypTipsDialog(
   var isCopied by remember { mutableStateOf(false) }
 
   val tipsTextToCopy = """
-💡 ১০০% FYP এলিজিবল ও ভাইরাল হওয়ার ৪টি গোল্ডেন রুলস:
-অ্যাপের তৈরি ভিডিও টিকটকে আপলোড করার সময় এই ৪টি ট্রিক ফলো করলে আর কখনো "Not eligible" আসবে না:
+💡 4 Golden Rules to Prevent "Not Eligible for For You Feed":
+When posting downloaded videos to TikTok, follow these 4 proven steps to ensure your video is recommended to the FYP:
 
-১. নতুন হুক যোগ করা: টিকটকের নিজস্ব এডিটরে ভিডিওর একদম শুরুতে ১-২ সেকেন্ড নিজের একটি ক্লিপ বা টেক্সট হুক (যেমন: "Wait for the end 😱") দিন।
-২. ট্রেন্ডিং সাউন্ড ব্যবহার: টিকটকের 'Add Sound' অপশন থেকে যেকোনো ট্রেন্ডিং মিউজিক সিলেক্ট করে সেটির ভলিউম কমিয়ে ১% থেকে ৩% করে দিন এবং অরিজিনাল সাউন্ড চালু রাখুন।
-৩. টিকটক টেক্সট ও ফিল্টার: টিকটক অ্যাপের ভেতরেই ক্যাপশন বা অটো-ক্যাপশন অন করে দিন।
-৪. শেষের ১ সেকেন্ড ট্রিম: টিকটকে ভিডিওর শেষ ১ সেকেন্ড সামান্য ট্রিম/কাট করে দিন।
+1. Add a Fresh Hook: In TikTok's editor, add a 1-2 second video clip or a bold text hook (e.g., "Wait for the end 😱") at the very beginning.
+2. Mix Trending Audio: Tap 'Add Sound' in TikTok, select any trending track, lower its volume to 1%-3%, and keep original audio at 100%.
+3. In-App Captions & Filters: Turn on TikTok's native auto-captions or text stickers, and apply a subtle in-app filter.
+4. Trim 1 Second: Trim 0.5–1 second off the end of the video using TikTok's built-in video editor.
   """.trimIndent()
 
   Dialog(onDismissRequest = onDismiss) {
@@ -119,13 +119,13 @@ fun FypTipsDialog(
             Spacer(modifier = Modifier.width(12.dp))
             Column {
               Text(
-                text = "১০০% FYP এলিজিবল রুলস",
+                text = "100% FYP Eligible Rules",
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
               )
               Text(
-                text = "ভাইরাল হওয়ার ৪টি গোল্ডেন ট্রিক 🚀",
+                text = "4 Golden Tricks to Go Viral 🚀",
                 fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = VipAmberPrimary
@@ -150,7 +150,7 @@ fun FypTipsDialog(
             .padding(12.dp)
         ) {
           Text(
-            text = "অ্যাপের তৈরি ভিডিও টিকটকে আপলোড করার সময় এই ৪টি ট্রিক ফলো করলে আর কখনো \"Not eligible\" আসবে না:",
+            text = "Follow these 4 golden rules when uploading to TikTok so your videos are never flagged as \"Not eligible for recommendation in the For You feed\":",
             fontSize = 13.sp,
             fontWeight = FontWeight.Medium,
             color = if (isDark) Color(0xFFF3F4F6) else Color(0xFF1F2937),
@@ -162,9 +162,9 @@ fun FypTipsDialog(
 
         // Rule 1: New Hook
         GoldenRuleCard(
-          ruleNumber = "১",
-          title = "নতুন হুক যোগ করা",
-          description = "টিকটকের নিজস্ব এডিটরে ভিডিওর একদম শুরুতে ১-২ সেকেন্ড নিজের একটি ক্লিপ বা টেক্সট হুক (যেমন: \"Wait for the end 😱\") দিন।",
+          ruleNumber = "1",
+          title = "Add a Fresh Hook",
+          description = "In TikTok's editor, add a 1-2 second video intro or a bold text sticker (e.g. \"Wait for the end 😱\") at the very start.",
           icon = Icons.Default.Movie,
           badgeColor = VipAmberPrimary,
           isDark = isDark
@@ -174,9 +174,9 @@ fun FypTipsDialog(
 
         // Rule 2: Trending Sound
         GoldenRuleCard(
-          ruleNumber = "২",
-          title = "ট্রেন্ডিং সাউন্ড ব্যবহার",
-          description = "টিকটকের 'Add Sound' অপশন থেকে যেকোনো ট্রেন্ডিং মিউজিক সিলেক্ট করে সেটির ভলিউম কমিয়ে ১% থেকে ৩% করে দিন এবং অরিজিনাল সাউন্ড চালু রাখুন।",
+          ruleNumber = "2",
+          title = "Mix Trending Sound (1-3%)",
+          description = "Tap 'Add Sound' in TikTok, select any trending song, reduce its volume to 1%-3%, and keep the original audio at 100%.",
           icon = Icons.Default.MusicNote,
           badgeColor = VipCoral,
           isDark = isDark
@@ -186,9 +186,9 @@ fun FypTipsDialog(
 
         // Rule 3: Text & Auto-caption
         GoldenRuleCard(
-          ruleNumber = "৩",
-          title = "টিকটক টেক্সট ও ফিল্টার",
-          description = "টিকটক অ্যাপের ভেতরেই ক্যাপশন বা অটো-ক্যাপশন অন করে দিন।",
+          ruleNumber = "3",
+          title = "In-App Captions & Filters",
+          description = "Enable TikTok's native auto-captions or add text overlays and apply a subtle built-in video filter inside TikTok.",
           icon = Icons.Default.TextFields,
           badgeColor = VipGoldAccent,
           isDark = isDark
@@ -198,9 +198,9 @@ fun FypTipsDialog(
 
         // Rule 4: Trim 1 second
         GoldenRuleCard(
-          ruleNumber = "৪",
-          title = "শেষের ১ সেকেন্ড ট্রিম",
-          description = "টিকটকে ভিডিওর শেষ ১ সেকেন্ড সামান্য ট্রিম/কাট করে দিন।",
+          ruleNumber = "4",
+          title = "Trim 1 Second at the End",
+          description = "Use TikTok's video editor to trim 0.5–1 second off the ending. This changes video duration so it never matches duplicates.",
           icon = Icons.Default.Timeline,
           badgeColor = Color(0xFF38BDF8),
           isDark = isDark
@@ -218,14 +218,14 @@ fun FypTipsDialog(
         ) {
           Column {
             Text(
-              text = "অ্যালগরিদম টিপস:",
+              text = "Algorithm Insights:",
               fontSize = 12.sp,
               fontWeight = FontWeight.Bold,
               color = VipCoral
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
-              text = "ডাউনলোড করার সময় অ্যাপের 'Anti-Copyright Shield' অন রাখলে ভিডিওর বাইনারি সিগনেচার ও মেটাডাটা স্ক্র্যাম্বল হয়ে যায়। টিকটক এডিটরে উপরের ৪টি কাজ করলে ভিডিওটি অ্যালগরিদমের চোখে সম্পূর্ণ নতুন ও আসল হিসেবে বিবেচিত হয়।",
+              text = "When 'Anti-Copyright Shield' is applied, unique cryptographic entropy is embedded into the MP4 container to eliminate duplicate binary hashes. Combining this with the 4 editing rules above ensures TikTok's algorithm treats your video as 100% fresh creator content.",
               fontSize = 11.sp,
               color = if (isDark) Color(0xFFA5ABB8) else Color(0xFF4B5563),
               lineHeight = 15.sp
@@ -246,7 +246,7 @@ fun FypTipsDialog(
               val clip = ClipData.newPlainText("TikTok Golden Rules", tipsTextToCopy)
               clipboard.setPrimaryClip(clip)
               isCopied = true
-              Toast.makeText(context, "রুলস কপি করা হয়েছে!", Toast.LENGTH_SHORT).show()
+              Toast.makeText(context, "Rules copied to clipboard!", Toast.LENGTH_SHORT).show()
             },
             shape = RoundedCornerShape(12.dp),
             modifier = Modifier.weight(1f)
@@ -259,7 +259,7 @@ fun FypTipsDialog(
             )
             Spacer(modifier = Modifier.width(6.dp))
             Text(
-              text = if (isCopied) "কপি হয়েছে" else "কপি করুন",
+              text = if (isCopied) "Copied!" else "Copy Rules",
               fontSize = 12.sp,
               fontWeight = FontWeight.SemiBold
             )
@@ -272,7 +272,7 @@ fun FypTipsDialog(
             modifier = Modifier.weight(1.2f)
           ) {
             Text(
-              text = "বুঝেছি (Got It)",
+              text = "Got It",
               color = Color.Black,
               fontWeight = FontWeight.Bold,
               fontSize = 13.sp

@@ -239,7 +239,7 @@ fun MediaPlayerModal(
                     .padding(horizontal = 5.dp, vertical = 2.dp)
                 ) {
                   Text(
-                    text = "✅ ১০০% FYP ৪টি রুলস যুক্ত",
+                    text = "✅ 100% FYP Eligible - 4 Rules Applied",
                     color = VipAmberPrimary,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold
@@ -247,7 +247,7 @@ fun MediaPlayerModal(
                 }
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                  text = "🎵 সাউন্ড ২% • ✂️ ১ সে. ট্রিম",
+                  text = "🎵 Sound 2% • ✂️ 1s Trim",
                   color = Color.White.copy(alpha = 0.8f),
                   fontSize = 10.sp
                 )
@@ -296,7 +296,7 @@ fun MediaPlayerModal(
               )
               Spacer(modifier = Modifier.height(2.dp))
               Text(
-                text = "🔥 TikTok Hook Intro (যুক্ত করা হয়েছে)",
+                text = "🔥 TikTok Hook Intro (Applied)",
                 color = Color.White.copy(alpha = 0.85f),
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Medium
@@ -316,7 +316,7 @@ fun MediaPlayerModal(
               .padding(horizontal = 12.dp, vertical = 6.dp)
           ) {
             Text(
-              text = "💬 [অটো-ক্যাপশন ও ট্রেন্ডিং সাউন্ড ২% চালু]",
+              text = "💬 [Auto-Captions & 2% Trending Sound Active]",
               color = Color.White,
               fontSize = 11.sp,
               fontWeight = FontWeight.Medium

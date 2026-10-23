@@ -96,7 +96,7 @@ fun FypShieldModal(
                 color = MaterialTheme.colorScheme.onBackground
               )
               Text(
-                text = "৪টি সুরক্ষা অপশন দিয়ে ১০০% অরিজিনাল করুন",
+                text = "100% Original with 4 FYP Protection Rules",
                 fontSize = 11.sp,
                 color = VipAmberPrimary,
                 fontWeight = FontWeight.Medium
@@ -112,7 +112,7 @@ fun FypShieldModal(
         Spacer(modifier = Modifier.height(10.dp))
 
         Text(
-          text = "ভিডিও: ${item.title.take(35)}...",
+          text = "Video: ${item.title.take(35)}...",
           fontSize = 12.sp,
           color = if (isDark) Color(0xFFA5ABB8) else Color(0xFF6B7280)
         )
@@ -128,7 +128,7 @@ fun FypShieldModal(
             .padding(horizontal = 10.dp, vertical = 8.dp)
         ) {
           Text(
-            text = "💡 গোল্ডেন রুল: আপলোডের সময় শুরুতে হুক, ১-৩% ভলিউমে ট্রেন্ডিং সাউন্ড, ক্যাপশন এবং শেষের ১ সেকেন্ড ট্রিম করুন।",
+            text = "💡 Golden Rules: When uploading to TikTok, add a 1s intro hook, 1-3% trending sound, in-app captions, and trim the last second.",
             fontSize = 11.sp,
             color = VipAmberPrimary,
             fontWeight = FontWeight.Medium,
@@ -140,8 +140,8 @@ fun FypShieldModal(
 
         // Option 1: New Hook Intro & Hash
         ShieldOptionCheckboxRow(
-          title = "১. নতুন হুক যোগ করা (Wait for the end 😱)",
-          description = "ভিডিওর শুরুতে ১-২ সেকেন্ড নিজস্ব হুক সিগনেচার ও ইউনিক বাইনারি হ্যাশ যুক্ত করে।",
+          title = "1. Add Hook Intro & Unique Salt",
+          description = "Injects a unique intro hook signature and cryptographic binary salt into the video file.",
           isChecked = options.md5HashScramble,
           onToggle = { onToggleOption(1) },
           isDark = isDark
@@ -149,8 +149,8 @@ fun FypShieldModal(
 
         // Option 2: Trending Audio Mix
         ShieldOptionCheckboxRow(
-          title = "২. ট্রেন্ডিং সাউন্ড মিক্সিং (১-৩%)",
-          description = "১-৩% ব্যাকগ্রাউন্ড ফ্রিকোয়েন্সি শিফট করে অটোমেটিক অডিও কনটেন্ট-আইডি বাইপাস করে।",
+          title = "2. Trending Audio Layer Mix (1-3%)",
+          description = "Shifts background frequency layer to prevent audio Content-ID duplication.",
           isChecked = options.audioPitchShift,
           onToggle = { onToggleOption(2) },
           isDark = isDark
@@ -158,8 +158,8 @@ fun FypShieldModal(
 
         // Option 3: TikTok Text & Auto-caption Filter
         ShieldOptionCheckboxRow(
-          title = "৩. টিকটক টেক্সট ও অটো-ক্যাপশন ফিল্টার",
-          description = "ক্যাপশন মেটাডাটা ও ফিল্টার লেয়ার যোগ করে ফ্রেশ অরজিনাল কনটেন্ট হিসেবে রূপান্তর করে।",
+          title = "3. TikTok Text & Filter Signature",
+          description = "Adds caption layer metadata to present the video as fresh, original creator content.",
           isChecked = options.microZoomCrop,
           onToggle = { onToggleOption(3) },
           isDark = isDark
@@ -167,8 +167,8 @@ fun FypShieldModal(
 
         // Option 4: Trim Last 1 Second
         ShieldOptionCheckboxRow(
-          title = "৪. শেষের ১ সেকেন্ড অটো-ট্রিম",
-          description = "ভিডিওর শেষ ১ সেকেন্ড ট্রিম/কাট করে মোট ফ্রেম ও শেষের টাইমস্ট্যাম্প অরিজিনাল থেকে আলাদা করে।",
+          title = "4. Auto-Trim Last 1 Second",
+          description = "Modifies frame count and ending duration so it never matches previous uploads.",
           isChecked = options.microSpeedShift,
           onToggle = { onToggleOption(4) },
           isDark = isDark
@@ -190,7 +190,7 @@ fun FypShieldModal(
             modifier = Modifier.weight(1f)
           ) {
             Text(
-              text = "সবগুলো (4/4)",
+              text = "Select All (4/4)",
               fontSize = 12.sp,
               color = VipAmberPrimary,
               fontWeight = FontWeight.Bold
@@ -204,7 +204,7 @@ fun FypShieldModal(
             modifier = Modifier.weight(1.5f)
           ) {
             Text(
-              text = "প্রয়োগ করুন (${options.activeOptionsCount})",
+              text = "Apply Shield (${options.activeOptionsCount})",
               fontSize = 13.sp,
               color = Color.Black,
               fontWeight = FontWeight.Bold

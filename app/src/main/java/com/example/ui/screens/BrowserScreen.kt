@@ -262,7 +262,7 @@ fun BrowserScreen(
             )
             Spacer(modifier = Modifier.width(6.dp))
             Text(
-              text = "💡 ফেইসবুক ভিডিও: ভিডিওটি প্লে করুন। ডিটেক্ট হলে নিচে ১-ট্যাপে ডাউনলোড বাটন আসবে এবং সরাসরি গ্যালারিতে সেভ হবে।",
+              text = "💡 Tip: Play the video. Once detected, a 1-tap download button will appear below to save directly to your gallery.",
               fontSize = 11.sp,
               color = Color.White,
               lineHeight = 15.sp
@@ -413,13 +413,13 @@ fun BrowserScreen(
             Spacer(modifier = Modifier.width(10.dp))
             Column {
               Text(
-                text = "🎯 আসল ভিডিও ডিটেক্ট হয়েছে!",
+                text = "🎯 Direct Video Stream Detected!",
                 fontWeight = FontWeight.Bold,
                 fontSize = 13.sp,
                 color = VipAmberPrimary
               )
               Text(
-                text = "ট্যাপ করে আসল HD ভিডিও ডাউনলোড করুন",
+                text = "Tap to download the full HD video stream",
                 fontSize = 11.sp,
                 color = Color.LightGray
               )
@@ -431,7 +431,7 @@ fun BrowserScreen(
               .padding(horizontal = 10.dp, vertical = 6.dp)
           ) {
             Text(
-              text = "ডাউনলোড",
+              text = "Download",
               color = Color.Black,
               fontWeight = FontWeight.Bold,
               fontSize = 12.sp

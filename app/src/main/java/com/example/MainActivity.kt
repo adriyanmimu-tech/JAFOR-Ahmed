@@ -2,13 +2,19 @@ package com.example
 
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.animation.Crossfade
+import androidx.compose.runtime.LaunchedEffect
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -95,6 +101,19 @@ class MainActivity : ComponentActivity() {
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose {
           lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+      }
+
+      val context = androidx.compose.ui.platform.LocalContext.current
+      val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+      ) { /* Permission handled gracefully */ }
+
+      LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+          if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            notificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+          }
         }
       }
 
@@ -247,7 +266,7 @@ fun VipBottomNavigationBar(
         },
         label = {
           Text(
-            text = "ডাউনলোডার",
+            text = "Downloader",
             fontSize = 11.sp,
             fontWeight = if (activeTab == 0) FontWeight.Bold else FontWeight.Medium
           )
@@ -274,7 +293,7 @@ fun VipBottomNavigationBar(
         },
         label = {
           Text(
-            text = "ব্রাউজার",
+            text = "Browser",
             fontSize = 11.sp,
             fontWeight = if (activeTab == 1) FontWeight.Bold else FontWeight.Medium
           )
@@ -311,7 +330,7 @@ fun VipBottomNavigationBar(
         },
         label = {
           Text(
-            text = "ডাউনলোডস",
+            text = "Downloads",
             fontSize = 11.sp,
             fontWeight = if (activeTab == 2) FontWeight.Bold else FontWeight.Medium
           )

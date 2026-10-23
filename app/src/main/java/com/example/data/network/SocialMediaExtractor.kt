@@ -144,7 +144,7 @@ class SocialMediaExtractor {
 
     // 5. If we could not extract a direct stream, throw an informative exception
     throw IllegalStateException(
-      "ভিডিওর সরাসরি ডাউনলোড লিংক পাওয়া যায়নি। ভিডিওটি প্রাইভেট হতে পারে অথবা লগইন প্রয়োজন। অনুগ্রহ করে অ্যাপের 'ব্রাউজার' ট্যাবে লিংকটি ওপেন করে 'Sniff & Download' চাপুন।"
+      "Direct video stream could not be extracted. The video might be private or requires login. Please open the link in the 'Browser' tab and tap 'Sniff & Download'."
     )
   }
 
