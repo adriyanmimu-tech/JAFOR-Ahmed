@@ -736,24 +736,34 @@ fun HomeScreen(
 
             // Quick Feature Badges
             Spacer(modifier = Modifier.height(10.dp))
-            Row(
-              modifier = Modifier.fillMaxWidth(),
-              horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-              listOf("✓ Best available quality", "✓ Manual quality choice", "✓ Audio options", "✓ FYP toggle").forEach { feature ->
-                Box(
-                  modifier = Modifier
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(if (isDark) Color(0x2034D399) else Color(0x1510B981))
-                    .border(0.6.dp, Color(0x4034D399), RoundedCornerShape(20.dp))
-                    .padding(horizontal = 7.dp, vertical = 2.dp)
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+              listOf(
+                listOf("✓ Best available quality", "✓ Manual quality choice"),
+                listOf("✓ Audio options", "✓ FYP toggle")
+              ).forEach { featureRow ->
+                Row(
+                  modifier = Modifier.fillMaxWidth(),
+                  horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                  Text(
-                    text = feature,
-                    fontSize = 9.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = if (isDark) Color(0xFFA7F3D0) else Color(0xFF047857)
-                  )
+                  featureRow.forEach { feature ->
+                    Box(
+                      modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(if (isDark) Color(0x2034D399) else Color(0x1510B981))
+                        .border(0.6.dp, Color(0x4034D399), RoundedCornerShape(20.dp))
+                        .padding(horizontal = 7.dp, vertical = 2.dp)
+                    ) {
+                      Text(
+                        text = feature,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = if (isDark) Color(0xFFA7F3D0) else Color(0xFF047857)
+                      )
+                    }
+                  }
                 }
               }
             }
