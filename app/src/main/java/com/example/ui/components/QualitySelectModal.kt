@@ -105,14 +105,14 @@ fun QualitySelectModal(
         .fillMaxWidth(0.95f)
         .clip(RoundedCornerShape(26.dp))
         .border(
-          width = 1.3.dp,
+          width = 1.4.dp,
           brush = Brush.linearGradient(
-            listOf(Color(0xFF10B981), Color(0xFF34D399), Color(0x60FFFFFF))
+            listOf(Color(0xEEFFFFFF), Color(0x4034D399), Color(0x80FFFFFF), Color(0x15000000))
           ),
           shape = RoundedCornerShape(26.dp)
         ),
-      color = if (isDark) Color(0xF8071813) else Color(0xF8FFFFFF),
-      tonalElevation = 10.dp
+      color = if (isDark) Color(0xF4071813) else Color(0xF6FFFFFF),
+      tonalElevation = 12.dp
     ) {
       Column(
         modifier = Modifier
@@ -232,13 +232,12 @@ fun QualitySelectModal(
 
         Spacer(modifier = Modifier.height(14.dp))
 
-        // DEDICATED TITLE & CAPTION BOX WITH 1-TAP COPY
-        GlassCard(
+        // DEDICATED TITLE & CAPTION BOX WITH 1-TAP COPY (PREMIUM SCREEN CARD)
+        PremiumGlassCard(
           isDark = isDark,
           modifier = Modifier.fillMaxWidth(),
-          borderColor = VipElectricCyan.copy(alpha = 0.4f),
-          borderWidth = 1.dp,
-          shape = RoundedCornerShape(18.dp)
+          shape = RoundedCornerShape(18.dp),
+          borderWidth = 1.2.dp
         ) {
           Column(
             modifier = Modifier
@@ -327,7 +326,7 @@ fun QualitySelectModal(
                   text = "Original Video Title & Caption:",
                   fontSize = 11.sp,
                   fontWeight = FontWeight.Bold,
-                  color = VipAmberPrimary
+                  color = Color(0xFF10B981)
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
@@ -357,8 +356,8 @@ fun QualitySelectModal(
                 }
               },
               colors = ButtonDefaults.buttonColors(
-                containerColor = if (isCaptionCopied) Color(0xFF10B981) else VipAmberPrimary.copy(alpha = 0.2f),
-                contentColor = if (isCaptionCopied) Color.White else VipAmberPrimary
+                containerColor = if (isCaptionCopied) Color(0xFF10B981) else Color(0x3510B981),
+                contentColor = if (isCaptionCopied) Color.Black else Color(0xFF10B981)
               ),
               shape = RoundedCornerShape(10.dp),
               modifier = Modifier.fillMaxWidth().height(38.dp)
@@ -395,14 +394,14 @@ fun QualitySelectModal(
           Text(
             text = "Tap to choose",
             fontSize = 11.sp,
-            color = VipAmberPrimary,
+            color = Color(0xFF10B981),
             fontWeight = FontWeight.SemiBold
           )
         }
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Quality Options List
+        // Quality Options List (Premium Screen Cards)
         LazyColumn(
           modifier = Modifier
             .fillMaxWidth()
@@ -424,18 +423,18 @@ fun QualitySelectModal(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // VIP Anti-Copyright & FYP Shield Toggle
-        GlassCard(
+        // VIP Anti-Copyright & FYP Shield Toggle (Premium Screen Card)
+        PremiumGlassCard(
           isDark = isDark,
-          borderColor = if (isAntiCopyrightEnabled) VipAmberPrimary else (if (isDark) Color(0x335A6282) else Color(0xFFDDDDDD)),
+          isSelected = isAntiCopyrightEnabled,
+          shape = RoundedCornerShape(16.dp),
           borderWidth = if (isAntiCopyrightEnabled) 1.5.dp else 1.dp,
-          shape = RoundedCornerShape(14.dp),
           modifier = Modifier.fillMaxWidth()
         ) {
           Row(
             modifier = Modifier
               .fillMaxWidth()
-              .padding(horizontal = 14.dp, vertical = 8.dp),
+              .padding(horizontal = 14.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
           ) {
@@ -447,13 +446,13 @@ fun QualitySelectModal(
                 modifier = Modifier
                   .size(32.dp)
                   .clip(CircleShape)
-                  .background(if (isAntiCopyrightEnabled) VipAmberPrimary.copy(alpha = 0.2f) else Color(0x22888888)),
+                  .background(if (isAntiCopyrightEnabled) Color(0x3510B981) else Color(0x22888888)),
                 contentAlignment = Alignment.Center
               ) {
                 Icon(
                   imageVector = Icons.Default.Lock,
                   contentDescription = "Anti-Copyright",
-                  tint = if (isAntiCopyrightEnabled) VipAmberPrimary else Color.Gray,
+                  tint = if (isAntiCopyrightEnabled) Color(0xFF10B981) else Color.Gray,
                   modifier = Modifier.size(16.dp)
                 )
               }
@@ -464,16 +463,16 @@ fun QualitySelectModal(
                     text = "FYP & Anti-Copyright 4x Shield",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
-                    color = if (isAntiCopyrightEnabled) VipAmberPrimary else MaterialTheme.colorScheme.onBackground
+                    color = if (isAntiCopyrightEnabled) Color(0xFF10B981) else MaterialTheme.colorScheme.onBackground
                   )
                   Spacer(modifier = Modifier.width(6.dp))
                   Text(
                     text = "4 FYP Rules",
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
-                    color = VipAmberPrimary,
+                    color = Color(0xFF10B981),
                     modifier = Modifier
-                      .background(VipAmberPrimary.copy(alpha = 0.2f), RoundedCornerShape(4.dp))
+                      .background(Color(0x3010B981), RoundedCornerShape(4.dp))
                       .clickable { onShowFypTips() }
                       .padding(horizontal = 5.dp, vertical = 1.dp)
                   )
@@ -492,7 +491,7 @@ fun QualitySelectModal(
               onCheckedChange = onToggleAntiCopyright,
               colors = SwitchDefaults.colors(
                 checkedThumbColor = Color.Black,
-                checkedTrackColor = VipAmberPrimary,
+                checkedTrackColor = Color(0xFF10B981),
                 uncheckedThumbColor = Color.LightGray,
                 uncheckedTrackColor = Color.DarkGray
               )
@@ -502,23 +501,31 @@ fun QualitySelectModal(
 
         Spacer(modifier = Modifier.height(14.dp))
 
-        // Main Confirm Download Button with Selected Resolution Tag
+        // Main Confirm Download Button (3D Embossed Emerald Glass Button)
         val currentQualityLabel = selectedQuality?.resolution?.ifEmpty { selectedQuality.label } ?: "HD"
         val currentFormat = selectedQuality?.format?.uppercase() ?: "MP4"
         val currentSize = selectedQuality?.estimatedSize?.let { " • $it" } ?: ""
 
-        Button(
-          onClick = onConfirmDownload,
-          enabled = selectedQuality != null,
+        Box(
           modifier = Modifier
             .fillMaxWidth()
             .height(52.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(
+              Brush.horizontalGradient(
+                listOf(Color(0xFF10B981), Color(0xFF34D399), Color(0xFF059669))
+              )
+            )
+            .border(
+              width = 1.2.dp,
+              brush = Brush.linearGradient(
+                listOf(Color(0xDDFFFFFF), Color(0x4034D399), Color(0x80FFFFFF))
+              ),
+              shape = RoundedCornerShape(16.dp)
+            )
+            .clickable(enabled = selectedQuality != null, onClick = onConfirmDownload)
             .testTag("confirm_download_button"),
-          shape = RoundedCornerShape(16.dp),
-          colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF00F2FE),
-            contentColor = Color.Black
-          )
+          contentAlignment = Alignment.Center
         ) {
           Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -527,13 +534,15 @@ fun QualitySelectModal(
             Icon(
               imageVector = Icons.Default.Download,
               contentDescription = "Download Now",
+              tint = Color.Black,
               modifier = Modifier.size(22.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
               text = "Start Download ($currentQualityLabel • $currentFormat$currentSize)",
               fontSize = 14.sp,
-              fontWeight = FontWeight.Bold
+              fontWeight = FontWeight.Bold,
+              color = Color.Black
             )
           }
         }
@@ -550,114 +559,114 @@ private fun ModernQualityCard(
   onClick: () -> Unit
 ) {
   val isAudio = quality.mediaType == MediaType.AUDIO
-  val cardBorder = if (isSelected) {
-    Brush.linearGradient(listOf(Color(0xFF00F2FE), Color(0xFF10B981)))
-  } else {
-    Brush.linearGradient(
-      if (isDark) listOf(Color(0x333B4261), Color(0x1F2A3048)) else listOf(Color(0xFFE2E8F0), Color(0xFFCBD5E1))
-    )
-  }
+  val isHighest = quality.isVipBest || quality.resolution.contains("4K")
 
-  val containerBg = when {
-    isSelected -> if (isDark) Color(0x3300F2FE) else Color(0x2200F2FE)
-    else -> if (isDark) Color(0x1F161A2B) else Color(0xFFF8FAFC)
-  }
-
-  Row(
+  PremiumGlassCard(
+    isDark = isDark,
+    isSelected = isSelected,
+    shape = RoundedCornerShape(16.dp),
+    borderWidth = if (isSelected) 1.5.dp else 1.dp,
     modifier = Modifier
       .fillMaxWidth()
-      .clip(RoundedCornerShape(14.dp))
-      .background(containerBg)
-      .border(if (isSelected) 1.5.dp else 1.dp, cardBorder, RoundedCornerShape(14.dp))
       .clickable(onClick = onClick)
-      .padding(horizontal = 14.dp, vertical = 11.dp),
-    verticalAlignment = Alignment.CenterVertically,
-    horizontalArrangement = Arrangement.SpaceBetween
   ) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-      Box(
-        modifier = Modifier
-          .size(34.dp)
-          .clip(CircleShape)
-          .background(
-            if (isSelected) Color(0xFF00F2FE).copy(alpha = 0.25f)
-            else (if (isDark) Color(0x2222273D) else Color(0xFFE2E8F0))
-          ),
-        contentAlignment = Alignment.Center
-      ) {
-        Icon(
-          imageVector = if (isAudio) Icons.Default.Audiotrack else Icons.Default.Movie,
-          contentDescription = quality.format,
-          tint = if (isSelected) Color(0xFF00F2FE) else (if (isDark) Color(0xFFA5ABC0) else Color(0xFF64748B)),
-          modifier = Modifier.size(18.dp)
-        )
-      }
-
-      Spacer(modifier = Modifier.width(12.dp))
-
-      Column {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-          Text(
-            text = quality.label,
-            fontSize = 13.sp,
-            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
-            color = if (isSelected) Color(0xFF00F2FE) else (if (isDark) Color.White else Color(0xFF0F172A))
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 14.dp, vertical = 11.dp),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+      Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(
+          modifier = Modifier
+            .size(34.dp)
+            .clip(CircleShape)
+            .background(
+              if (isSelected) Color(0xFF10B981).copy(alpha = 0.25f)
+              else (if (isDark) Color(0x22FFFFFF) else Color(0x20000000))
+            )
+            .border(
+              0.8.dp,
+              if (isSelected) Color(0xFF34D399) else Color(0x30FFFFFF),
+              CircleShape
+            ),
+          contentAlignment = Alignment.Center
+        ) {
+          Icon(
+            imageVector = if (isAudio) Icons.Default.Audiotrack else Icons.Default.Movie,
+            contentDescription = quality.format,
+            tint = if (isSelected) Color(0xFF34D399) else (if (isDark) Color.White.copy(alpha = 0.8f) else Color.DarkGray),
+            modifier = Modifier.size(18.dp)
           )
-          if (quality.isVipBest) {
-            Spacer(modifier = Modifier.width(6.dp))
-            Box(
-              modifier = Modifier
-                .background(Color(0xFF00F2FE).copy(alpha = 0.2f), RoundedCornerShape(4.dp))
-                .border(0.5.dp, Color(0xFF00F2FE), RoundedCornerShape(4.dp))
-                .padding(horizontal = 5.dp, vertical = 1.dp)
-            ) {
-              Text(
-                text = "BEST",
-                fontSize = 9.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF00F2FE)
-              )
+        }
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Column {
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+              text = quality.label,
+              fontSize = 13.sp,
+              fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
+              color = if (isSelected) Color(0xFF10B981) else (if (isDark) Color.White else Color(0xFF0F172A))
+            )
+            if (isHighest) {
+              Spacer(modifier = Modifier.width(6.dp))
+              Box(
+                modifier = Modifier
+                  .background(Color(0xFF10B981), RoundedCornerShape(4.dp))
+                  .padding(horizontal = 5.dp, vertical = 1.5.dp)
+              ) {
+                Text(
+                  text = "HIGHEST 4K",
+                  fontSize = 8.sp,
+                  fontWeight = FontWeight.Black,
+                  color = Color.Black
+                )
+              }
             }
           }
+          Spacer(modifier = Modifier.height(2.dp))
+          Text(
+            text = "${quality.format} • ${quality.bitrate}",
+            fontSize = 10.sp,
+            color = if (isDark) Color(0xFFA7B5B0) else Color(0xFF6B7280)
+          )
         }
-        Spacer(modifier = Modifier.height(2.dp))
-        Text(
-          text = "${quality.format} • ${quality.bitrate}",
-          fontSize = 11.sp,
-          color = if (isDark) Color(0xFF888E9F) else Color(0xFF64748B)
-        )
       }
-    }
 
-    Row(verticalAlignment = Alignment.CenterVertically) {
-      Text(
-        text = quality.estimatedSize,
-        fontSize = 12.sp,
-        fontWeight = FontWeight.Bold,
-        color = if (isSelected) Color(0xFF00F2FE) else (if (isDark) Color(0xFFB5BAC9) else Color(0xFF475569))
-      )
-      Spacer(modifier = Modifier.width(10.dp))
-      Box(
-        modifier = Modifier
-          .size(20.dp)
-          .clip(CircleShape)
-          .border(
-            width = if (isSelected) 2.dp else 1.2.dp,
-            color = if (isSelected) Color(0xFF00F2FE) else (if (isDark) Color(0x665A6282) else Color(0xFF94A3B8)),
-            shape = CircleShape
-          )
-          .background(if (isSelected) Color(0xFF00F2FE) else Color.Transparent),
-        contentAlignment = Alignment.Center
-      ) {
-        if (isSelected) {
-          Icon(
-            imageVector = Icons.Default.Check,
-            contentDescription = "Selected",
-            tint = Color.Black,
-            modifier = Modifier.size(13.dp)
-          )
+      Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+          text = quality.estimatedSize,
+          fontSize = 12.sp,
+          fontWeight = FontWeight.Bold,
+          color = if (isSelected) Color(0xFF10B981) else (if (isDark) Color(0xFFB5BAC9) else Color(0xFF475569))
+        )
+        Spacer(modifier = Modifier.width(10.dp))
+        Box(
+          modifier = Modifier
+            .size(20.dp)
+            .clip(CircleShape)
+            .border(
+              width = if (isSelected) 2.dp else 1.dp,
+              color = if (isSelected) Color(0xFF10B981) else Color(0x60FFFFFF),
+              shape = CircleShape
+            )
+            .background(if (isSelected) Color(0xFF10B981) else Color.Transparent),
+          contentAlignment = Alignment.Center
+        ) {
+          if (isSelected) {
+            Icon(
+              imageVector = Icons.Default.Check,
+              contentDescription = "Selected",
+              tint = Color.Black,
+              modifier = Modifier.size(13.dp)
+            )
+          }
         }
       }
     }
   }
 }
+

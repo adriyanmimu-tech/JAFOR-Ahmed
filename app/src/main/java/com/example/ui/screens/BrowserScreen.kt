@@ -284,10 +284,15 @@ fun BrowserScreen(
             WebView(context).apply {
               settings.javaScriptEnabled = true
               settings.domStorageEnabled = true
+              settings.databaseEnabled = true
               settings.loadWithOverviewMode = true
               settings.useWideViewPort = true
               settings.mediaPlaybackRequiresUserGesture = false
-              settings.userAgentString = "Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36"
+              settings.javaScriptCanOpenWindowsAutomatically = true
+              settings.setSupportMultipleWindows(false)
+              settings.mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+              settings.cacheMode = android.webkit.WebSettings.LOAD_DEFAULT
+              settings.userAgentString = "Mozilla/5.0 (Linux; Android 14; Mobile; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.6367.113 Mobile Safari/537.36"
 
               try {
                 val cookieManager = android.webkit.CookieManager.getInstance()
@@ -310,6 +315,113 @@ fun BrowserScreen(
               )
 
               webViewClient = object : WebViewClient() {
+                private fun handleCustomScheme(view: WebView?, urlStr: String): Boolean {
+                  if (urlStr.startsWith("http://", ignoreCase = true) || urlStr.startsWith("https://", ignoreCase = true)) {
+                    return false
+                  }
+
+                  // TikTok proprietary app schemes: snssdk1340://, snssdk1128://, tiktok://
+                  if (urlStr.startsWith("snssdk", ignoreCase = true) || urlStr.startsWith("tiktok", ignoreCase = true)) {
+                    val uri = android.net.Uri.parse(urlStr)
+                    val targetWebUrl = uri.getQueryParameter("params_url")
+                      ?: uri.getQueryParameter("url")
+                      ?: uri.getQueryParameter("target_url")
+                      ?: uri.getQueryParameter("schema_url")
+
+                    if (!targetWebUrl.isNullOrBlank()) {
+                      val decoded = try {
+                        java.net.URLDecoder.decode(targetWebUrl, "UTF-8")
+                      } catch (_: Exception) {
+                        targetWebUrl
+                      }
+                      if (decoded.startsWith("http://", ignoreCase = true) || decoded.startsWith("https://", ignoreCase = true)) {
+                        view?.loadUrl(decoded)
+                        return true
+                      }
+                    }
+
+                    // Extract video ID from path: /aweme/detail/{id}
+                    val pathSegments = uri.pathSegments
+                    val detailIdx = pathSegments.indexOf("detail")
+                    val videoId = if (detailIdx != -1 && detailIdx + 1 < pathSegments.size) {
+                      pathSegments[detailIdx + 1]
+                    } else {
+                      pathSegments.lastOrNull { segment -> segment.all { it.isDigit() } && segment.length >= 8 }
+                    }
+
+                    if (!videoId.isNullOrBlank()) {
+                      view?.loadUrl("https://www.tiktok.com/video/$videoId")
+                      return true
+                    }
+
+                    // Block app scheme to avoid net::ERR_UNKNOWN_URL_SCHEME
+                    return true
+                  }
+
+                  // Android Intent schemes: intent://...
+                  if (urlStr.startsWith("intent://", ignoreCase = true)) {
+                    try {
+                      val intent = android.content.Intent.parseUri(urlStr, android.content.Intent.URI_INTENT_SCHEME)
+                      val fallbackUrl = intent.getStringExtra("browser_fallback_url")
+                      if (!fallbackUrl.isNullOrBlank()) {
+                        view?.loadUrl(fallbackUrl)
+                        return true
+                      }
+                      val pm = view?.context?.packageManager
+                      if (pm != null && intent.resolveActivity(pm) != null) {
+                        view.context.startActivity(intent)
+                      }
+                    } catch (_: Exception) {}
+                    return true
+                  }
+
+                  // Other external schemes: tel, mailto, whatsapp, market
+                  try {
+                    val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(urlStr))
+                    view?.context?.startActivity(intent)
+                  } catch (_: Exception) {}
+                  return true
+                }
+
+                override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+                  val urlStr = request?.url?.toString() ?: return false
+                  return handleCustomScheme(view, urlStr)
+                }
+
+                @Deprecated("Deprecated in Java")
+                override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
+                  val urlStr = url ?: return false
+                  return handleCustomScheme(view, urlStr)
+                }
+
+                override fun onReceivedError(
+                  view: WebView?,
+                  errorCode: Int,
+                  description: String?,
+                  failingUrl: String?
+                ) {
+                  if (failingUrl?.startsWith("snssdk", ignoreCase = true) == true ||
+                      failingUrl?.startsWith("intent", ignoreCase = true) == true ||
+                      failingUrl?.startsWith("tiktok", ignoreCase = true) == true) {
+                    return
+                  }
+                  super.onReceivedError(view, errorCode, description, failingUrl)
+                }
+
+                override fun onReceivedError(
+                  view: WebView?,
+                  request: WebResourceRequest?,
+                  error: android.webkit.WebResourceError?
+                ) {
+                  val urlStr = request?.url?.toString() ?: ""
+                  if (urlStr.startsWith("snssdk", ignoreCase = true) ||
+                      urlStr.startsWith("intent", ignoreCase = true) ||
+                      urlStr.startsWith("tiktok", ignoreCase = true)) {
+                    return
+                  }
+                  super.onReceivedError(view, request, error)
+                }
+
                 override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                   super.onPageStarted(view, url, favicon)
                   isPageLoading = true
@@ -327,9 +439,15 @@ fun BrowserScreen(
                     inputUrlText = it
                   }
 
-                  // Inject auto video detector in the web page
+                  // Inject auto video detector in the web page & suppress app-switch prompts
                   val js = """
                     (function() {
+                      // Prevent app-switch popups on TikTok mobile
+                      try {
+                        var banner = document.querySelector('.tiktok-cookie-banner, .open-app-banner, [class*="download-bar"]');
+                        if (banner) banner.style.display = 'none';
+                      } catch(e) {}
+
                       function checkVideos() {
                         var vids = document.querySelectorAll('video');
                         for (var i = 0; i < vids.length; i++) {

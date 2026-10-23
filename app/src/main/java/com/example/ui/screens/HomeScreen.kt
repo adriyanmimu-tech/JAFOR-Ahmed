@@ -94,6 +94,7 @@ import com.example.ui.components.GlassCard
 import com.example.ui.components.GlassmorphicBackground
 import com.example.ui.components.PlatformBrandBadge
 import com.example.ui.components.PlatformBrandIcon
+import com.example.ui.components.PremiumGlassCard
 import com.example.ui.components.QualitySelectModal
 import com.example.ui.theme.VipEmeraldPrimary
 import com.example.ui.theme.VipMintAccent
@@ -621,41 +622,58 @@ fun HomeScreen(
       }
 
       // --- FROSTED GLASS URL INPUT CARD ---
+      // --- FROSTED GLASS URL INPUT CARD (PREMIUM SCREEN CARD) ---
       item {
-        GlassCard(
+        PremiumGlassCard(
           isDark = isDark,
           modifier = Modifier.fillMaxWidth(),
-          shape = RoundedCornerShape(22.dp),
-          borderBrush = if (inputUrl.isNotBlank()) {
-            Brush.linearGradient(listOf(Color(0xFF10B981), Color(0xFF00F2FE)))
-          } else null,
-          borderWidth = 1.3.dp
+          shape = RoundedCornerShape(24.dp),
+          borderWidth = 1.4.dp,
+          isSelected = inputUrl.isNotBlank()
         ) {
           Column(
             modifier = Modifier
               .fillMaxWidth()
-              .padding(16.dp)
+              .padding(18.dp)
           ) {
             Row(
               modifier = Modifier.fillMaxWidth(),
               horizontalArrangement = Arrangement.SpaceBetween,
               verticalAlignment = Alignment.CenterVertically
             ) {
-              Text(
-                text = "Paste Video Link",
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold,
-                color = if (isDark) Color.White else Color(0xFF0F172A)
-              )
-              Text(
-                text = "4K Turbo Downloader",
-                fontSize = 11.sp,
-                color = Color(0xFF10B981),
-                fontWeight = FontWeight.Bold
-              )
+              Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                  modifier = Modifier
+                    .size(9.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFF10B981))
+                )
+                Spacer(modifier = Modifier.width(7.dp))
+                Text(
+                  text = "Paste Video Link",
+                  fontSize = 15.sp,
+                  fontWeight = FontWeight.Bold,
+                  letterSpacing = 0.2.sp,
+                  color = if (isDark) Color.White else Color(0xFF0F172A)
+                )
+              }
+              Box(
+                modifier = Modifier
+                  .clip(RoundedCornerShape(6.dp))
+                  .background(if (isDark) Color(0x3510B981) else Color(0x2010B981))
+                  .border(0.8.dp, Color(0xFF34D399), RoundedCornerShape(6.dp))
+                  .padding(horizontal = 8.dp, vertical = 3.dp)
+              ) {
+                Text(
+                  text = "4K Turbo Downloader",
+                  fontSize = 10.sp,
+                  color = Color(0xFF10B981),
+                  fontWeight = FontWeight.Bold
+                )
+              }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             OutlinedTextField(
               value = inputUrl,
@@ -717,14 +735,38 @@ fun HomeScreen(
                 .testTag("url_text_input")
             )
 
+            // Quick Feature Badges
+            Spacer(modifier = Modifier.height(10.dp))
+            Row(
+              modifier = Modifier.fillMaxWidth(),
+              horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+              listOf("✓ 4K 60FPS", "✓ Watermark-Free", "✓ Lossless MP3", "✓ Auto FYP").forEach { feature ->
+                Box(
+                  modifier = Modifier
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(if (isDark) Color(0x2034D399) else Color(0x1510B981))
+                    .border(0.6.dp, Color(0x4034D399), RoundedCornerShape(20.dp))
+                    .padding(horizontal = 7.dp, vertical = 2.dp)
+                ) {
+                  Text(
+                    text = feature,
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = if (isDark) Color(0xFFA7F3D0) else Color(0xFF047857)
+                  )
+                }
+              }
+            }
+
             if (errorMessage != null) {
-              Spacer(modifier = Modifier.height(10.dp))
+              Spacer(modifier = Modifier.height(12.dp))
               Box(
                 modifier = Modifier
                   .fillMaxWidth()
-                  .clip(RoundedCornerShape(12.dp))
+                  .clip(RoundedCornerShape(14.dp))
                   .background(Color(0x22FF5252))
-                  .border(1.dp, Color(0x66FF5252), RoundedCornerShape(12.dp))
+                  .border(1.dp, Color(0x66FF5252), RoundedCornerShape(14.dp))
                   .padding(12.dp)
               ) {
                 Column {
@@ -767,32 +809,43 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // Fetch & Inspect Button with Emerald Gradient
-            Button(
-              onClick = { viewModel.extractMedia() },
-              enabled = !isExtracting,
-              shape = RoundedCornerShape(16.dp),
-              colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF10B981),
-                contentColor = Color.Black
-              ),
+            // Fetch & Inspect Button with 3D Embossed Emerald Gradient
+            Box(
               modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp)
-                .testTag("fetch_video_button")
+                .clip(RoundedCornerShape(16.dp))
+                .background(
+                  Brush.horizontalGradient(
+                    listOf(Color(0xFF10B981), Color(0xFF34D399), Color(0xFF059669))
+                  )
+                )
+                .border(
+                  width = 1.2.dp,
+                  brush = Brush.linearGradient(
+                    listOf(Color(0xDDFFFFFF), Color(0x4034D399), Color(0x80FFFFFF))
+                  ),
+                  shape = RoundedCornerShape(16.dp)
+                )
+                .clickable(enabled = !isExtracting) { viewModel.extractMedia() }
+                .testTag("fetch_video_button"),
+              contentAlignment = Alignment.Center
             ) {
               if (isExtracting) {
-                CircularProgressIndicator(
-                  modifier = Modifier.size(24.dp),
-                  color = Color.Black,
-                  strokeWidth = 2.5.dp
-                )
-                Spacer(modifier = Modifier.width(10.dp))
-                Text(
-                  text = "Analyzing Highest 4K Stream...",
-                  fontSize = 15.sp,
-                  fontWeight = FontWeight.Bold
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                  CircularProgressIndicator(
+                    modifier = Modifier.size(22.dp),
+                    color = Color.Black,
+                    strokeWidth = 2.5.dp
+                  )
+                  Spacer(modifier = Modifier.width(10.dp))
+                  Text(
+                    text = "Analyzing Highest 4K Stream...",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                  )
+                }
               } else {
                 Row(
                   verticalAlignment = Alignment.CenterVertically,
@@ -801,13 +854,15 @@ fun HomeScreen(
                   Icon(
                     imageVector = Icons.Default.Download,
                     contentDescription = "Download",
+                    tint = Color.Black,
                     modifier = Modifier.size(22.dp)
                   )
                   Spacer(modifier = Modifier.width(8.dp))
                   Text(
                     text = "View Qualities & Download ⚡",
                     fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
                   )
                 }
               }
@@ -816,22 +871,19 @@ fun HomeScreen(
         }
       }
 
-      // --- INLINE VIDEO DETAILS & QUALITY SELECTOR ---
+      // --- INLINE VIDEO DETAILS & QUALITY SELECTOR (PREMIUM SCREEN CARDS) ---
       extractedMedia?.let { media ->
         item {
-          GlassCard(
+          PremiumGlassCard(
             isDark = isDark,
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(24.dp),
-            borderBrush = Brush.linearGradient(
-              listOf(Color(0xFF10B981), Color(0xFF00F2FE), Color(0x60FFFFFF))
-            ),
             borderWidth = 1.4.dp
           ) {
             Column(
               modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(18.dp)
             ) {
               Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -845,7 +897,7 @@ fun HomeScreen(
                       .clip(CircleShape)
                       .background(Color(0xFF10B981))
                   )
-                  Spacer(modifier = Modifier.width(6.dp))
+                  Spacer(modifier = Modifier.width(8.dp))
                   Text(
                     text = "Media Details & Quality Options",
                     fontSize = 15.sp,
@@ -859,7 +911,7 @@ fun HomeScreen(
                 )
               }
 
-              Spacer(modifier = Modifier.height(12.dp))
+              Spacer(modifier = Modifier.height(14.dp))
 
               // Video Thumbnail Preview
               Box(
@@ -868,8 +920,8 @@ fun HomeScreen(
                   .height(180.dp)
                   .clip(RoundedCornerShape(16.dp))
                   .border(
-                    1.dp,
-                    Brush.linearGradient(listOf(Color(0x80FFFFFF), Color(0x20FFFFFF))),
+                    1.2.dp,
+                    Brush.linearGradient(listOf(Color(0x90FFFFFF), Color(0x3034D399), Color(0x20FFFFFF))),
                     RoundedCornerShape(16.dp)
                   )
               ) {
@@ -885,7 +937,8 @@ fun HomeScreen(
                     .align(Alignment.BottomEnd)
                     .padding(8.dp)
                     .clip(RoundedCornerShape(6.dp))
-                    .background(Color.Black.copy(alpha = 0.75f))
+                    .background(Color.Black.copy(alpha = 0.8f))
+                    .border(0.5.dp, Color(0xFF34D399), RoundedCornerShape(6.dp))
                     .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
                   Text(
@@ -908,22 +961,21 @@ fun HomeScreen(
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
               )
-              Spacer(modifier = Modifier.height(2.dp))
+              Spacer(modifier = Modifier.height(4.dp))
               Text(
                 text = "Author: ${media.author.ifEmpty { "Creator" }} • Duration: ${media.duration}",
                 fontSize = 11.sp,
                 color = if (isDark) Color(0xFFA7B5B0) else Color(0xFF6B7280)
               )
 
-              Spacer(modifier = Modifier.height(12.dp))
+              Spacer(modifier = Modifier.height(14.dp))
 
-              // 1-Tap Caption Copy Box
-              GlassCard(
+              // 1-Tap Caption Copy Box (Frosted Glass)
+              PremiumGlassCard(
                 isDark = isDark,
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(14.dp),
-                borderWidth = 1.dp,
-                borderColor = Color(0x3510B981)
+                borderWidth = 1.dp
               ) {
                 Column(
                   modifier = Modifier
@@ -998,117 +1050,137 @@ fun HomeScreen(
                 }
               }
 
-              Spacer(modifier = Modifier.height(14.dp))
+              Spacer(modifier = Modifier.height(16.dp))
 
-              Text(
-                text = "Select Quality & Format:",
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold,
-                color = if (isDark) Color.White else Color(0xFF0F172A)
-              )
+              Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+              ) {
+                Text(
+                  text = "Select Quality & Format:",
+                  fontSize = 14.sp,
+                  fontWeight = FontWeight.Bold,
+                  color = if (isDark) Color.White else Color(0xFF0F172A)
+                )
+                Text(
+                  text = "Lossless 4K Max",
+                  fontSize = 11.sp,
+                  fontWeight = FontWeight.Bold,
+                  color = Color(0xFF10B981)
+                )
+              }
 
-              Spacer(modifier = Modifier.height(8.dp))
+              Spacer(modifier = Modifier.height(10.dp))
 
-              // Quality options list with highest 4K marked
+              // Quality options list: each item is a sleek PremiumGlassCard
               Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 media.qualities.forEach { quality ->
                   val isSelected = selectedQuality == quality
                   val isAudio = quality.mediaType == MediaType.AUDIO
                   val isHighest = quality.isVipBest || quality.resolution.contains("4K")
 
-                  Row(
+                  PremiumGlassCard(
+                    isDark = isDark,
+                    isSelected = isSelected,
+                    shape = RoundedCornerShape(16.dp),
+                    borderWidth = if (isSelected) 1.5.dp else 1.dp,
                     modifier = Modifier
                       .fillMaxWidth()
-                      .clip(RoundedCornerShape(12.dp))
-                      .background(
-                        if (isSelected) (if (isDark) Color(0x3510B981) else Color(0x2510B981))
-                        else (if (isDark) Color(0x1AFFFFFF) else Color(0x20000000))
-                      )
-                      .border(
-                        if (isSelected) 1.5.dp else 1.dp,
-                        if (isSelected) Color(0xFF10B981) else (if (isDark) Color(0x25FFFFFF) else Color(0x20000000)),
-                        RoundedCornerShape(12.dp)
-                      )
                       .clickable { viewModel.selectQuality(quality) }
-                      .padding(horizontal = 12.dp, vertical = 9.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
                   ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                      Box(
-                        modifier = Modifier
-                          .size(30.dp)
-                          .clip(CircleShape)
-                          .background(if (isSelected) Color(0x4010B981) else Color(0x22888888)),
-                        contentAlignment = Alignment.Center
-                      ) {
-                        Icon(
-                          imageVector = if (isAudio) Icons.Default.Audiotrack else Icons.Default.Movie,
-                          contentDescription = quality.format,
-                          tint = if (isSelected) Color(0xFF10B981) else Color.Gray,
-                          modifier = Modifier.size(16.dp)
-                        )
-                      }
-                      Spacer(modifier = Modifier.width(10.dp))
-                      Column {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                          Text(
-                            text = quality.label,
-                            fontSize = 13.sp,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            color = if (isSelected) Color(0xFF10B981) else (if (isDark) Color.White else Color(0xFF0F172A))
+                    Row(
+                      modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 12.dp),
+                      verticalAlignment = Alignment.CenterVertically,
+                      horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                      Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                          modifier = Modifier
+                            .size(34.dp)
+                            .clip(CircleShape)
+                            .background(
+                              if (isSelected) Color(0xFF10B981).copy(alpha = 0.25f)
+                              else (if (isDark) Color(0x22FFFFFF) else Color(0x20000000))
+                            )
+                            .border(
+                              0.8.dp,
+                              if (isSelected) Color(0xFF34D399) else Color(0x30FFFFFF),
+                              CircleShape
+                            ),
+                          contentAlignment = Alignment.Center
+                        ) {
+                          Icon(
+                            imageVector = if (isAudio) Icons.Default.Audiotrack else Icons.Default.Movie,
+                            contentDescription = quality.format,
+                            tint = if (isSelected) Color(0xFF34D399) else (if (isDark) Color.White.copy(alpha = 0.8f) else Color.DarkGray),
+                            modifier = Modifier.size(18.dp)
                           )
-                          if (isHighest) {
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Box(
-                              modifier = Modifier
-                                .background(Color(0xFF10B981), RoundedCornerShape(4.dp))
-                                .padding(horizontal = 5.dp, vertical = 1.dp)
-                            ) {
-                              Text(
-                                text = "HIGHEST 4K",
-                                fontSize = 8.sp,
-                                fontWeight = FontWeight.Black,
-                                color = Color.Black
-                              )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                          Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                              text = quality.label,
+                              fontSize = 13.sp,
+                              fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                              color = if (isSelected) Color(0xFF10B981) else (if (isDark) Color.White else Color(0xFF0F172A))
+                            )
+                            if (isHighest) {
+                              Spacer(modifier = Modifier.width(6.dp))
+                              Box(
+                                modifier = Modifier
+                                  .background(Color(0xFF10B981), RoundedCornerShape(4.dp))
+                                  .padding(horizontal = 5.dp, vertical = 1.5.dp)
+                              ) {
+                                Text(
+                                  text = "HIGHEST 4K",
+                                  fontSize = 8.sp,
+                                  fontWeight = FontWeight.Black,
+                                  color = Color.Black
+                                )
+                              }
                             }
                           }
+                          Spacer(modifier = Modifier.height(2.dp))
+                          Text(
+                            text = "${quality.format} • ${quality.bitrate}",
+                            fontSize = 10.sp,
+                            color = if (isDark) Color(0xFFA7B5B0) else Color(0xFF6B7280)
+                          )
                         }
-                        Text(
-                          text = "${quality.format} • ${quality.bitrate}",
-                          fontSize = 10.sp,
-                          color = if (isDark) Color(0xFFA7B5B0) else Color(0xFF6B7280)
-                        )
                       }
-                    }
 
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                      Text(
-                        text = quality.estimatedSize,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (isSelected) Color(0xFF10B981) else (if (isDark) Color(0xFFB5BAC9) else Color(0xFF475569))
-                      )
-                      Spacer(modifier = Modifier.width(8.dp))
-                      Box(
-                        modifier = Modifier
-                          .size(18.dp)
-                          .clip(CircleShape)
-                          .border(
-                            width = if (isSelected) 2.dp else 1.dp,
-                            color = if (isSelected) Color(0xFF10B981) else Color.Gray,
-                            shape = CircleShape
-                          )
-                          .background(if (isSelected) Color(0xFF10B981) else Color.Transparent),
-                        contentAlignment = Alignment.Center
-                      ) {
-                        if (isSelected) {
-                          Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "Selected",
-                            tint = Color.Black,
-                            modifier = Modifier.size(12.dp)
-                          )
+                      Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                          text = quality.estimatedSize,
+                          fontSize = 12.sp,
+                          fontWeight = FontWeight.Bold,
+                          color = if (isSelected) Color(0xFF10B981) else (if (isDark) Color(0xFFB5BAC9) else Color(0xFF475569))
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Box(
+                          modifier = Modifier
+                            .size(20.dp)
+                            .clip(CircleShape)
+                            .border(
+                              width = if (isSelected) 2.dp else 1.dp,
+                              color = if (isSelected) Color(0xFF10B981) else Color(0x60FFFFFF),
+                              shape = CircleShape
+                            )
+                            .background(if (isSelected) Color(0xFF10B981) else Color.Transparent),
+                          contentAlignment = Alignment.Center
+                        ) {
+                          if (isSelected) {
+                            Icon(
+                              imageVector = Icons.Default.Check,
+                              contentDescription = "Selected",
+                              tint = Color.Black,
+                              modifier = Modifier.size(13.dp)
+                            )
+                          }
                         }
                       }
                     }
@@ -1116,36 +1188,51 @@ fun HomeScreen(
                 }
               }
 
-              Spacer(modifier = Modifier.height(14.dp))
+              Spacer(modifier = Modifier.height(16.dp))
 
-              // Direct Download Button
+              // Direct Download Button (3D Embossed Emerald Glass Button)
               val curOpt = selectedQuality
               val currentQualityLabel = curOpt?.resolution?.ifEmpty { curOpt.label } ?: "4K"
               val currentFormat = curOpt?.format?.uppercase() ?: "MP4"
 
-              Button(
-                onClick = { viewModel.confirmDownload() },
-                enabled = selectedQuality != null,
+              Box(
                 modifier = Modifier
                   .fillMaxWidth()
-                  .height(48.dp),
-                shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(
-                  containerColor = Color(0xFF10B981),
-                  contentColor = Color.Black
-                )
+                  .height(50.dp)
+                  .clip(RoundedCornerShape(16.dp))
+                  .background(
+                    Brush.horizontalGradient(
+                      listOf(Color(0xFF10B981), Color(0xFF34D399), Color(0xFF059669))
+                    )
+                  )
+                  .border(
+                    width = 1.2.dp,
+                    brush = Brush.linearGradient(
+                      listOf(Color(0xDDFFFFFF), Color(0x4034D399), Color(0x80FFFFFF))
+                    ),
+                    shape = RoundedCornerShape(16.dp)
+                  )
+                  .clickable(enabled = selectedQuality != null) { viewModel.confirmDownload() },
+                contentAlignment = Alignment.Center
               ) {
-                Icon(
-                  imageVector = Icons.Default.Download,
-                  contentDescription = "Download Now",
-                  modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                  text = "Start Download ($currentQualityLabel • $currentFormat)",
-                  fontSize = 13.sp,
-                  fontWeight = FontWeight.Bold
-                )
+                Row(
+                  verticalAlignment = Alignment.CenterVertically,
+                  horizontalArrangement = Arrangement.Center
+                ) {
+                  Icon(
+                    imageVector = Icons.Default.Download,
+                    contentDescription = "Download Now",
+                    tint = Color.Black,
+                    modifier = Modifier.size(20.dp)
+                  )
+                  Spacer(modifier = Modifier.width(8.dp))
+                  Text(
+                    text = "Start Download ($currentQualityLabel • $currentFormat)",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                  )
+                }
               }
             }
           }
