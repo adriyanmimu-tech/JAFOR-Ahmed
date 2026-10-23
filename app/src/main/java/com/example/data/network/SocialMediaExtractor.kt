@@ -140,7 +140,7 @@ class SocialMediaExtractor {
    */
   private fun extractTikTokMedia(url: String): ExtractedMediaInfo? {
     try {
-      val apiUrl = "https://www.tikwm.com/api/?url=${java.net.URLEncoder.encode(url, "UTF-8")}"
+      val apiUrl = "https://www.tikwm.com/api/?url=${java.net.URLEncoder.encode(url, "UTF-8")}&hd=1"
       val request = Request.Builder()
         .url(apiUrl)
         .header("User-Agent", MOBILE_UA)
