@@ -474,9 +474,7 @@ fun QualitySelectModal(
 
         // Main Confirm Download Button (3D Embossed Emerald Glass Button)
         val currentQuality = selectedQuality?.takeIf { it.downloadUrl.startsWith("http", ignoreCase = true) }
-        val currentQualityLabel = currentQuality?.resolution?.ifEmpty { currentQuality.label } ?: "Choose quality"
-        val currentFormat = selectedQuality?.format?.uppercase() ?: "MP4"
-        val currentSize = selectedQuality?.estimatedSize?.let { " • $it" } ?: ""
+        val downloadButtonText = currentQuality?.let { "Download ${it.format.uppercase()}" } ?: "No quality available"
 
         Box(
           modifier = Modifier
@@ -511,7 +509,9 @@ fun QualitySelectModal(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-              text = if (currentQuality != null) "Download • $currentQualityLabel • $currentFormat$currentSize" else "No quality available",
+              text = downloadButtonText,
+              maxLines = 1,
+              overflow = TextOverflow.Ellipsis,
               fontSize = 14.sp,
               fontWeight = FontWeight.Bold,
               color = Color.Black
@@ -546,99 +546,96 @@ private fun ModernQualityCard(
       modifier = Modifier
         .fillMaxWidth()
         .padding(horizontal = 14.dp, vertical = 11.dp),
-      verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.SpaceBetween
+      verticalAlignment = Alignment.CenterVertically
     ) {
-      Row(verticalAlignment = Alignment.CenterVertically) {
-        Box(
-          modifier = Modifier
-            .size(34.dp)
-            .clip(CircleShape)
-            .background(
-              if (isSelected) Color(0xFF10B981).copy(alpha = 0.25f)
-              else (if (isDark) Color(0x22FFFFFF) else Color(0x20000000))
-            )
-            .border(
-              0.8.dp,
-              if (isSelected) Color(0xFF34D399) else Color(0x30FFFFFF),
-              CircleShape
-            ),
-          contentAlignment = Alignment.Center
-        ) {
-          Icon(
-            imageVector = if (isAudio) Icons.Default.Audiotrack else Icons.Default.Movie,
-            contentDescription = quality.format,
-            tint = if (isSelected) Color(0xFF34D399) else (if (isDark) Color.White.copy(alpha = 0.8f) else Color.DarkGray),
-            modifier = Modifier.size(18.dp)
+      Box(
+        modifier = Modifier
+          .size(34.dp)
+          .clip(CircleShape)
+          .background(
+            if (isSelected) Color(0xFF10B981).copy(alpha = 0.25f)
+            else (if (isDark) Color(0x22FFFFFF) else Color(0x20000000))
           )
-        }
-
-        Spacer(modifier = Modifier.width(12.dp))
-
-        Column {
-          Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-              text = quality.label,
-              fontSize = 13.sp,
-              fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
-              color = if (isSelected) Color(0xFF10B981) else (if (isDark) Color.White else Color(0xFF0F172A))
-            )
-            if (isRecommended) {
-              Spacer(modifier = Modifier.width(6.dp))
-              Box(
-                modifier = Modifier
-                  .background(Color(0xFF10B981), RoundedCornerShape(4.dp))
-                  .padding(horizontal = 5.dp, vertical = 1.5.dp)
-              ) {
-                Text(
-                  text = "BEST AVAILABLE",
-                  fontSize = 8.sp,
-                  fontWeight = FontWeight.Black,
-                  color = Color.Black
-                )
-              }
-            }
-          }
-          Spacer(modifier = Modifier.height(2.dp))
-          Text(
-            text = "${quality.format} • ${quality.bitrate}",
-            fontSize = 10.sp,
-            color = if (isDark) Color(0xFFA7B5B0) else Color(0xFF6B7280)
-          )
-        }
+          .border(
+            0.8.dp,
+            if (isSelected) Color(0xFF34D399) else Color(0x30FFFFFF),
+            CircleShape
+          ),
+        contentAlignment = Alignment.Center
+      ) {
+        Icon(
+          imageVector = if (isAudio) Icons.Default.Audiotrack else Icons.Default.Movie,
+          contentDescription = quality.format,
+          tint = if (isSelected) Color(0xFF34D399) else (if (isDark) Color.White.copy(alpha = 0.8f) else Color.DarkGray),
+          modifier = Modifier.size(18.dp)
+        )
       }
 
-      Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(
-          text = quality.estimatedSize,
-          fontSize = 12.sp,
-          fontWeight = FontWeight.Bold,
-          color = if (isSelected) Color(0xFF10B981) else (if (isDark) Color(0xFFB5BAC9) else Color(0xFF475569))
-        )
-        Spacer(modifier = Modifier.width(10.dp))
-        Box(
-          modifier = Modifier
-            .size(20.dp)
-            .clip(CircleShape)
-            .border(
-              width = if (isSelected) 2.dp else 1.dp,
-              color = if (isSelected) Color(0xFF10B981) else Color(0x60FFFFFF),
-              shape = CircleShape
-            )
-            .background(if (isSelected) Color(0xFF10B981) else Color.Transparent),
-          contentAlignment = Alignment.Center
+      Spacer(modifier = Modifier.width(12.dp))
+
+      Column(modifier = Modifier.weight(1f)) {
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          verticalAlignment = Alignment.CenterVertically
         ) {
-          if (isSelected) {
-            Icon(
-              imageVector = Icons.Default.Check,
-              contentDescription = "Selected",
-              tint = Color.Black,
-              modifier = Modifier.size(13.dp)
-            )
+          Text(
+            text = quality.label,
+            modifier = Modifier.weight(1f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            fontSize = 13.sp,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
+            color = if (isSelected) Color(0xFF10B981) else (if (isDark) Color.White else Color(0xFF0F172A))
+          )
+          if (isRecommended) {
+            Spacer(modifier = Modifier.width(6.dp))
+            Box(
+              modifier = Modifier
+                .background(Color(0xFF10B981), RoundedCornerShape(4.dp))
+                .padding(horizontal = 5.dp, vertical = 1.5.dp)
+            ) {
+              Text(
+                text = "BEST",
+                fontSize = 8.sp,
+                fontWeight = FontWeight.Black,
+                color = Color.Black
+              )
+            }
           }
+        }
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(
+          text = "${quality.format} • ${quality.bitrate}",
+          maxLines = 1,
+          overflow = TextOverflow.Ellipsis,
+          fontSize = 10.sp,
+          color = if (isDark) Color(0xFFA7B5B0) else Color(0xFF6B7280)
+        )
+      }
+
+      Spacer(modifier = Modifier.width(12.dp))
+
+      Box(
+        modifier = Modifier
+          .size(20.dp)
+          .clip(CircleShape)
+          .border(
+            width = if (isSelected) 2.dp else 1.dp,
+            color = if (isSelected) Color(0xFF10B981) else Color(0x60FFFFFF),
+            shape = CircleShape
+          )
+          .background(if (isSelected) Color(0xFF10B981) else Color.Transparent),
+        contentAlignment = Alignment.Center
+      ) {
+        if (isSelected) {
+          Icon(
+            imageVector = Icons.Default.Check,
+            contentDescription = "Selected",
+            tint = Color.Black,
+            modifier = Modifier.size(13.dp)
+          )
         }
       }
     }
   }
 }
-
