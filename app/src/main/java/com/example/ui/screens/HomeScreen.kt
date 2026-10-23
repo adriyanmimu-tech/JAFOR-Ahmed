@@ -446,10 +446,10 @@ fun HomeScreen(
                   }
                   Spacer(modifier = Modifier.height(6.dp))
                   Button(
-                    onClick = { onNavigateToTab(1) },
+                    onClick = { viewModel.openUrlInBrowser(inputUrl) },
                     colors = ButtonDefaults.buttonColors(containerColor = VipAmberPrimary),
                     shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.fillMaxWidth().height(36.dp)
+                    modifier = Modifier.fillMaxWidth().height(38.dp)
                   ) {
                     Text(
                       text = "ব্রাউজারে ওপেন করে আসল ভিডিও নিন 🚀",

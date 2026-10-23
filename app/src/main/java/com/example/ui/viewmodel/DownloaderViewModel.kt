@@ -71,6 +71,12 @@ class DownloaderViewModel(application: Application) : AndroidViewModel(applicati
   private val _activePlayingItem = MutableStateFlow<DownloadItem?>(null)
   val activePlayingItem: StateFlow<DownloadItem?> = _activePlayingItem.asStateFlow()
 
+  private val _browserUrlToLoad = MutableStateFlow<String?>(null)
+  val browserUrlToLoad: StateFlow<String?> = _browserUrlToLoad.asStateFlow()
+
+  private val _fileLocationDialogItem = MutableStateFlow<DownloadItem?>(null)
+  val fileLocationDialogItem: StateFlow<DownloadItem?> = _fileLocationDialogItem.asStateFlow()
+
   fun onUrlChange(newUrl: String) {
     _inputUrl.value = newUrl
     _errorMessage.value = null
@@ -83,6 +89,27 @@ class DownloaderViewModel(application: Application) : AndroidViewModel(applicati
   fun setTab(index: Int) {
     _activeTab.value = index
   }
+
+  fun openUrlInBrowser(url: String) {
+    val clean = url.trim()
+    if (clean.isNotBlank()) {
+      _browserUrlToLoad.value = clean
+      _activeTab.value = 1
+    }
+  }
+
+  fun onBrowserUrlLoaded() {
+    _browserUrlToLoad.value = null
+  }
+
+  fun showFileLocation(item: DownloadItem) {
+    _fileLocationDialogItem.value = item
+  }
+
+  fun dismissFileLocation() {
+    _fileLocationDialogItem.value = null
+  }
+
 
   fun checkClipboard(clipboardContent: String?) {
     if (clipboardContent.isNullOrBlank()) return

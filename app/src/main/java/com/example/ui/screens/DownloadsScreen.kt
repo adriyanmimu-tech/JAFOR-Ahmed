@@ -26,23 +26,30 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Audiotrack
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -149,6 +156,53 @@ fun DownloadsScreen(
       }
     }
 
+    Spacer(modifier = Modifier.height(10.dp))
+
+    // Gallery & File Manager Direct Sync Banner
+    GlassCard(
+      isDark = isDark,
+      borderColor = VipAmberPrimary.copy(alpha = 0.4f),
+      borderWidth = 1.dp,
+      shape = RoundedCornerShape(14.dp),
+      modifier = Modifier.fillMaxWidth()
+    ) {
+      Row(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        Box(
+          modifier = Modifier
+            .size(34.dp)
+            .clip(CircleShape)
+            .background(VipAmberPrimary.copy(alpha = 0.2f)),
+          contentAlignment = Alignment.Center
+        ) {
+          Icon(
+            imageVector = Icons.Default.PhotoLibrary,
+            contentDescription = "Gallery & File Manager",
+            tint = VipAmberPrimary,
+            modifier = Modifier.size(20.dp)
+          )
+        }
+        Spacer(modifier = Modifier.width(10.dp))
+        Column {
+          Text(
+            text = "📁 সরাসরি গ্যালারি ও ফাইল ম্যানেজারে সংরক্ষিত",
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold,
+            color = VipAmberPrimary
+          )
+          Text(
+            text = "সব ভিডিও স্বয়ংক্রিয়ভাবে ফোনের Gallery ও Movies/VidMax ফোল্ডারে সেভ হয়।",
+            fontSize = 11.sp,
+            color = if (isDark) Color(0xFFA5ABB8) else Color(0xFF6B7280)
+          )
+        }
+      }
+    }
+
     Spacer(modifier = Modifier.height(14.dp))
 
     // Search bar
@@ -181,6 +235,7 @@ fun DownloadsScreen(
         .fillMaxWidth()
         .height(52.dp)
     )
+
 
     val shieldMessage by viewModel.shieldStatusMessage.collectAsState()
     if (shieldMessage != null) {
@@ -308,6 +363,8 @@ fun DownloadsScreen(
             item = item,
             isDark = isDark,
             onPlay = { onPlayItem(item) },
+            onOpenInGallery = { openInPhoneGallery(context, item) },
+            onShowLocation = { viewModel.showFileLocation(item) },
             onPause = { viewModel.pauseDownload(item.id) },
             onResume = { viewModel.resumeDownload(item.id) },
             onCancel = { viewModel.cancelDownload(item.id) },
@@ -335,14 +392,30 @@ fun DownloadsScreen(
         onDismiss = { viewModel.closeShieldModal() }
       )
     }
+
+    val fileLocationDialogItem by viewModel.fileLocationDialogItem.collectAsState()
+    fileLocationDialogItem?.let { locItem ->
+      FileLocationDialog(
+        item = locItem,
+        isDark = isDark,
+        onDismiss = { viewModel.dismissFileLocation() },
+        onOpenInGallery = {
+          openInPhoneGallery(context, locItem)
+          viewModel.dismissFileLocation()
+        }
+      )
+    }
   }
 }
+
 
 @Composable
 private fun DownloadItemRow(
   item: DownloadItem,
   isDark: Boolean,
   onPlay: () -> Unit,
+  onOpenInGallery: () -> Unit,
+  onShowLocation: () -> Unit,
   onPause: () -> Unit,
   onResume: () -> Unit,
   onCancel: () -> Unit,
@@ -470,6 +543,26 @@ private fun DownloadItemRow(
               color = if (isDark) Color(0xFF9EA3B0) else Color(0xFF757575)
             )
           }
+
+          // Gallery & Files indicator for completed items
+          if (!isActive && item.status == DownloadStatus.COMPLETED) {
+            Spacer(modifier = Modifier.height(3.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+              Icon(
+                imageVector = Icons.Default.CheckCircle,
+                contentDescription = "Saved in Gallery",
+                tint = Color(0xFF00E676),
+                modifier = Modifier.size(11.dp)
+              )
+              Spacer(modifier = Modifier.width(4.dp))
+              Text(
+                text = "গ্যালারি ও Movies/VidMax-এ সেভড",
+                fontSize = 10.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF00E676)
+              )
+            }
+          }
         }
 
         // Action Buttons
@@ -499,13 +592,30 @@ private fun DownloadItemRow(
             )
           }
         } else {
-          // Completed row actions
+          // Completed row actions: Gallery, Folder, VIP Play, Share, Shield, Delete
+          IconButton(onClick = onOpenInGallery) {
+            Icon(
+              imageVector = Icons.Default.PhotoLibrary,
+              contentDescription = "গ্যালারিতে ওপেন করুন",
+              tint = VipAmberPrimary,
+              modifier = Modifier.size(20.dp)
+            )
+          }
+          IconButton(onClick = onShowLocation) {
+            Icon(
+              imageVector = Icons.Default.Folder,
+              contentDescription = "ফাইল ম্যানেজার ও লোকেশন",
+              tint = if (isDark) Color.White.copy(alpha = 0.85f) else Color.Black.copy(alpha = 0.75f),
+              modifier = Modifier.size(20.dp)
+            )
+          }
           if (item.mediaType == MediaType.VIDEO && !item.isShielded) {
             IconButton(onClick = onShield) {
               Icon(
                 imageVector = Icons.Default.Lock,
                 contentDescription = "Shield for FYP",
-                tint = VipAmberPrimary
+                tint = VipAmberPrimary,
+                modifier = Modifier.size(20.dp)
               )
             }
           }
@@ -597,3 +707,165 @@ private fun shareMedia(context: Context, item: DownloadItem) {
     context.startActivity(Intent.createChooser(intent, "Share Link"))
   }
 }
+
+private fun openInPhoneGallery(context: Context, item: DownloadItem) {
+  val path = item.localFilePath
+  if (path != null && File(path).exists()) {
+    try {
+      val file = File(path)
+      val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+      val mimeType = if (item.mediaType == MediaType.VIDEO) "video/*" else "audio/*"
+      val intent = Intent(Intent.ACTION_VIEW).apply {
+        setDataAndType(uri, mimeType)
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+      }
+      context.startActivity(Intent.createChooser(intent, "গ্যালারি অথবা প্লেয়ারে ওপেন করুন"))
+    } catch (_: Exception) {
+      android.widget.Toast.makeText(context, "গ্যালারি প্লেয়ার ওপেন করা যায়নি", android.widget.Toast.LENGTH_SHORT).show()
+    }
+  } else {
+    android.widget.Toast.makeText(context, "ফাইলটি ডিভাইসে খুঁজে পাওয়া যায়নি", android.widget.Toast.LENGTH_SHORT).show()
+  }
+}
+
+@Composable
+private fun FileLocationDialog(
+  item: DownloadItem,
+  isDark: Boolean,
+  onDismiss: () -> Unit,
+  onOpenInGallery: () -> Unit
+) {
+  val context = LocalContext.current
+  androidx.compose.ui.window.Dialog(onDismissRequest = onDismiss) {
+    GlassCard(
+      isDark = isDark,
+      borderColor = VipAmberPrimary,
+      shape = RoundedCornerShape(20.dp),
+      modifier = Modifier.fillMaxWidth()
+    ) {
+      Column(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(20.dp)
+      ) {
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+              imageVector = Icons.Default.Folder,
+              contentDescription = "Folder",
+              tint = VipAmberPrimary,
+              modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+              text = "ফাইল ও গ্যালারি লোকেশন",
+              fontSize = 15.sp,
+              fontWeight = FontWeight.Bold,
+              color = MaterialTheme.colorScheme.onBackground
+            )
+          }
+          IconButton(onClick = onDismiss, modifier = Modifier.size(26.dp)) {
+            Icon(Icons.Default.Close, contentDescription = "Close")
+          }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Text(
+          text = item.title,
+          fontSize = 13.sp,
+          fontWeight = FontWeight.SemiBold,
+          color = MaterialTheme.colorScheme.onBackground,
+          maxLines = 2,
+          overflow = TextOverflow.Ellipsis
+        )
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Box(
+          modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .background(if (isDark) Color(0x3310121C) else Color(0xFFEEEEEE))
+            .border(1.dp, if (isDark) Color(0x33555D75) else Color(0xFFCCCCCC), RoundedCornerShape(10.dp))
+            .padding(10.dp)
+        ) {
+          Column {
+            Text(
+              text = "📁 ডিভাইস ফাইল ম্যানেজার পাথ:",
+              fontSize = 11.sp,
+              fontWeight = FontWeight.Bold,
+              color = VipAmberPrimary
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+              text = item.localFilePath ?: "Movies/VidMax",
+              fontSize = 12.sp,
+              color = if (isDark) Color(0xFFE2E8F0) else Color(0xFF1E293B)
+            )
+          }
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+          Button(
+            onClick = {
+              val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+              val clip = android.content.ClipData.newPlainText("File Path", item.localFilePath ?: "")
+              clipboard.setPrimaryClip(clip)
+              android.widget.Toast.makeText(context, "পাথ কপি হয়েছে!", android.widget.Toast.LENGTH_SHORT).show()
+            },
+            colors = ButtonDefaults.buttonColors(containerColor = if (isDark) Color(0x33FFFFFF) else Color(0x22000000)),
+            shape = RoundedCornerShape(10.dp),
+            modifier = Modifier.weight(1f)
+          ) {
+            Icon(Icons.Default.ContentCopy, contentDescription = "Copy", modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onBackground)
+            Spacer(modifier = Modifier.width(6.dp))
+            Text("পাথ কপি", fontSize = 12.sp, color = MaterialTheme.colorScheme.onBackground)
+          }
+
+          Button(
+            onClick = onOpenInGallery,
+            colors = ButtonDefaults.buttonColors(containerColor = VipAmberPrimary),
+            shape = RoundedCornerShape(10.dp),
+            modifier = Modifier.weight(1.3f)
+          ) {
+            Icon(Icons.Default.PhotoLibrary, contentDescription = "Gallery", modifier = Modifier.size(16.dp), tint = Color.Black)
+            Spacer(modifier = Modifier.width(6.dp))
+            Text("গ্যালারিতে ওপেন", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+          }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedButton(
+          onClick = {
+            item.localFilePath?.let { p ->
+              android.media.MediaScannerConnection.scanFile(
+                context,
+                arrayOf(p),
+                arrayOf(if (item.mediaType == MediaType.VIDEO) "video/mp4" else "audio/mpeg")
+              ) { _, _ -> }
+              android.widget.Toast.makeText(context, "গ্যালারি ও ফাইল ম্যানেজার রিফ্রেশ সম্পন্ন!", android.widget.Toast.LENGTH_SHORT).show()
+            }
+          },
+          shape = RoundedCornerShape(10.dp),
+          modifier = Modifier.fillMaxWidth()
+        ) {
+          Icon(Icons.Default.Refresh, contentDescription = "Refresh", modifier = Modifier.size(16.dp), tint = VipAmberPrimary)
+          Spacer(modifier = Modifier.width(6.dp))
+          Text("গ্যালারি ও ফাইল স্ক্যান রিফ্রেশ", fontSize = 11.sp, color = VipAmberPrimary)
+        }
+      }
+    }
+  }
+}
+

@@ -41,6 +41,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -77,15 +79,28 @@ fun BrowserScreen(
   var isPageLoading by remember { mutableStateOf(false) }
   var detectedVideoStreamUrl by remember { mutableStateOf<String?>(null) }
 
+  val browserUrlToLoad by viewModel.browserUrlToLoad.collectAsState()
+  androidx.compose.runtime.LaunchedEffect(browserUrlToLoad) {
+    browserUrlToLoad?.let { target ->
+      if (target.isNotBlank()) {
+        currentUrl = target
+        inputUrlText = target
+        webViewRef?.loadUrl(target)
+        viewModel.onBrowserUrlLoaded()
+      }
+    }
+  }
+
   val bookmarks = listOf(
     Bookmark("YouTube", "https://m.youtube.com", Color(0xFFFF0000)),
     Bookmark("TikTok", "https://www.tiktok.com", Color(0xFF00F2FE)),
     Bookmark("Instagram", "https://www.instagram.com", Color(0xFFE1306C)),
-    Bookmark("Facebook", "https://www.facebook.com", Color(0xFF1877F2)),
+    Bookmark("Facebook", "https://m.facebook.com", Color(0xFF1877F2)),
     Bookmark("X / Twitter", "https://x.com", Color(0xFF1DA1F2)),
     Bookmark("Pinterest", "https://www.pinterest.com", Color(0xFFBD081C)),
     Bookmark("Reddit", "https://www.reddit.com", Color(0xFFFF4500))
   )
+
 
   Box(
     modifier = Modifier
@@ -227,6 +242,35 @@ fun BrowserScreen(
         )
       }
 
+      // Facebook VIP Guide Banner
+      if (currentUrl.contains("facebook.com") || currentUrl.contains("fb.watch")) {
+        Box(
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 4.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .background(Color(0x331877F2))
+            .border(1.dp, Color(0x661877F2), RoundedCornerShape(10.dp))
+            .padding(horizontal = 10.dp, vertical = 6.dp)
+        ) {
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+              imageVector = Icons.Default.Download,
+              contentDescription = "Facebook tip",
+              tint = VipAmberPrimary,
+              modifier = Modifier.size(16.dp)
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(
+              text = "💡 ফেইসবুক ভিডিও: ভিডিওটি প্লে করুন। ডিটেক্ট হলে নিচে ১-ট্যাপে ডাউনলোড বাটন আসবে এবং সরাসরি গ্যালারিতে সেভ হবে।",
+              fontSize = 11.sp,
+              color = Color.White,
+              lineHeight = 15.sp
+            )
+          }
+        }
+      }
+
       // Web View Container
       Box(
         modifier = Modifier
@@ -242,7 +286,28 @@ fun BrowserScreen(
               settings.domStorageEnabled = true
               settings.loadWithOverviewMode = true
               settings.useWideViewPort = true
-              settings.userAgentString = "Mozilla/5.0 (Linux; Android 13; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
+              settings.mediaPlaybackRequiresUserGesture = false
+              settings.userAgentString = "Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36"
+
+              try {
+                val cookieManager = android.webkit.CookieManager.getInstance()
+                cookieManager.setAcceptCookie(true)
+                cookieManager.setAcceptThirdPartyCookies(this, true)
+              } catch (_: Exception) {}
+
+              addJavascriptInterface(
+                object {
+                  @android.webkit.JavascriptInterface
+                  fun onVideoFound(stream: String) {
+                    post {
+                      if (isVideoStreamUrl(stream)) {
+                        detectedVideoStreamUrl = stream
+                      }
+                    }
+                  }
+                },
+                "vidMaxBridge"
+              )
 
               webViewClient = object : WebViewClient() {
                 override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
@@ -261,6 +326,28 @@ fun BrowserScreen(
                     currentUrl = it
                     inputUrlText = it
                   }
+
+                  // Inject auto video detector in the web page
+                  val js = """
+                    (function() {
+                      function checkVideos() {
+                        var vids = document.querySelectorAll('video');
+                        for (var i = 0; i < vids.length; i++) {
+                          var src = vids[i].currentSrc || vids[i].src;
+                          if (!src) {
+                            var s = vids[i].querySelector('source');
+                            if (s) src = s.src;
+                          }
+                          if (src && src.indexOf('http') === 0 && window.vidMaxBridge) {
+                            window.vidMaxBridge.onVideoFound(src);
+                          }
+                        }
+                      }
+                      checkVideos();
+                      setInterval(checkVideos, 2500);
+                    })();
+                  """.trimIndent()
+                  view?.evaluateJavascript(js, null)
                 }
 
                 override fun shouldInterceptRequest(
@@ -293,6 +380,7 @@ fun BrowserScreen(
           }
         )
       }
+
     }
 
     // Sniffed Video Quick Banner
@@ -391,12 +479,18 @@ fun BrowserScreen(
 
 private fun isVideoStreamUrl(url: String): Boolean {
   val clean = url.lowercase().substringBefore("?")
-  return clean.endsWith(".mp4") || clean.endsWith(".m4v") || clean.endsWith(".webm") ||
-         clean.endsWith(".mov") || clean.endsWith(".m3u8") ||
-         url.contains(".fbcdn.net/v/") || url.contains("tiktokcdn.com") ||
-         url.contains("video.twimg.com") || url.contains("cdninstagram.com") ||
-         url.contains("googlevideo.com/videoplayback")
+  val isVideoExt = clean.endsWith(".mp4") || clean.endsWith(".m4v") || clean.endsWith(".webm") ||
+                   clean.endsWith(".mov") || clean.endsWith(".m3u8")
+  val isSocialCdn = url.contains(".fbcdn.net/v/") ||
+                    (url.contains(".fbcdn.net") && (url.contains("video") || url.contains("/t39.") || url.contains("bytestart"))) ||
+                    url.contains("video.xx.fbcdn.net") ||
+                    url.contains("tiktokcdn.com") ||
+                    url.contains("video.twimg.com") ||
+                    url.contains("cdninstagram.com") ||
+                    url.contains("googlevideo.com/videoplayback")
+  return isVideoExt || isSocialCdn
 }
+
 
 private data class Bookmark(
   val name: String,

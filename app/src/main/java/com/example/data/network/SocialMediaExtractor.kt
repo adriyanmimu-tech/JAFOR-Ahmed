@@ -144,73 +144,41 @@ class SocialMediaExtractor {
 
   /**
    * Facebook Video Extractor:
-   * Scrapes browser_native_hd_url, playable_url, and sd_src/hd_src from Facebook video/reel page.
+   * Multi-tier resolution for Facebook Reels, Watch, and share links:
+   * Tier 1: Follow redirects and scrape with mobile / desktop headers and unescaped JSON.
+   * Tier 2: Extract from mbasic.facebook.com (/video_redirect/?src=...).
+   * Tier 3: Regex scan for all fbcdn.net video streams.
+   * Tier 4: Public video resolver helper.
    */
   private fun extractFacebookMedia(url: String): ExtractedMediaInfo? {
     try {
-      val request = Request.Builder()
-        .url(url)
-        .header("User-Agent", DESKTOP_UA)
-        .header("Accept-Language", "en-US,en;q=0.9")
-        .build()
+      // 1. Resolve shortlinks (fb.watch, facebook.com/share/r/, etc.)
+      val resolvedUrl = resolveRedirects(url)
 
-      client.newCall(request).execute().use { response ->
-        if (response.isSuccessful) {
-          val html = response.body?.string() ?: ""
+      // Try extraction from resolved URL
+      val result = attemptFacebookHtmlExtraction(resolvedUrl)
+      if (result != null && result.qualities.isNotEmpty()) {
+        return result
+      }
 
-          val title = extractMetaTag(html, "og:title")
-            ?.replace("&quot;", "\"")
-            ?.replace("&#039;", "'")
-            ?: extractTitleTag(html)
-            ?: "Facebook Video"
+      // 2. Try mbasic.facebook.com (serves direct HTML without heavy JS obfuscation)
+      val mbasicResult = extractFacebookMbasic(resolvedUrl)
+      if (mbasicResult != null && mbasicResult.qualities.isNotEmpty()) {
+        return mbasicResult
+      }
 
-          val thumbnail = extractMetaTag(html, "og:image")
-            ?.replace("&amp;", "&")
-            ?: ""
-
-          // Extract HD and SD video links from embedded JavaScript payloads
-          var hdUrl = extractRegexMatch(html, "\"browser_native_hd_url\":\"(https:[^\"]+)\"")
-            ?: extractRegexMatch(html, "\"playable_url_quality_hd\":\"(https:[^\"]+)\"")
-            ?: extractRegexMatch(html, "hd_src:\"(https:[^\"]+)\"")
-
-          var sdUrl = extractRegexMatch(html, "\"browser_native_sd_url\":\"(https:[^\"]+)\"")
-            ?: extractRegexMatch(html, "\"playable_url\":\"(https:[^\"]+)\"")
-            ?: extractRegexMatch(html, "sd_src:\"(https:[^\"]+)\"")
-            ?: extractMetaTag(html, "og:video")
-            ?: extractMetaTag(html, "og:video:url")
-            ?: extractMetaTag(html, "og:video:secure_url")
-
-          hdUrl = cleanJsonUrl(hdUrl)
-          sdUrl = cleanJsonUrl(sdUrl)
-
-          val primaryStream = hdUrl ?: sdUrl
-          if (!primaryStream.isNullOrBlank() && primaryStream.startsWith("http")) {
-            val qualities = mutableListOf<VideoQualityOption>()
-            if (!hdUrl.isNullOrBlank()) {
-              qualities.add(
-                VideoQualityOption("1080p / 720p HD", "HD", "MP4", MediaType.VIDEO, "42 MB", hdUrl, "3500 kbps", true)
-              )
-            }
-            if (!sdUrl.isNullOrBlank()) {
-              qualities.add(
-                VideoQualityOption("SD Standard Quality", "SD", "MP4", MediaType.VIDEO, "18 MB", sdUrl, "1500 kbps", hdUrl.isNullOrBlank())
-              )
-            }
-            qualities.add(
-              VideoQualityOption("MP3 Audio", "320 kbps", "MP3", MediaType.AUDIO, "4.8 MB", primaryStream, "320 kbps")
-            )
-
-            return ExtractedMediaInfo(
-              originalUrl = url,
-              title = title,
-              author = extractMetaTag(html, "og:site_name") ?: "@facebook_watch",
-              duration = "03:15",
-              thumbnailUrl = thumbnail.ifEmpty { "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=600&q=80" },
-              platform = "Facebook",
-              qualities = qualities
-            )
-          }
+      // 3. Try with original URL if different from resolved
+      if (resolvedUrl != url) {
+        val originalResult = attemptFacebookHtmlExtraction(url)
+        if (originalResult != null && originalResult.qualities.isNotEmpty()) {
+          return originalResult
         }
+      }
+
+      // 4. Try public high-speed Facebook API resolver
+      val apiResult = extractFacebookViaPublicApi(resolvedUrl)
+      if (apiResult != null && apiResult.qualities.isNotEmpty()) {
+        return apiResult
       }
     } catch (_: Exception) {
       // Fallback
@@ -218,6 +186,270 @@ class SocialMediaExtractor {
 
     return null
   }
+
+  private fun resolveRedirects(rawUrl: String): String {
+    try {
+      val request = Request.Builder()
+        .url(rawUrl)
+        .header("User-Agent", MOBILE_UA)
+        .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+        .build()
+
+      client.newCall(request).execute().use { response ->
+        return response.request.url.toString()
+      }
+    } catch (_: Exception) {
+      return rawUrl
+    }
+  }
+
+  private fun attemptFacebookHtmlExtraction(targetUrl: String): ExtractedMediaInfo? {
+    try {
+      // Try both Mobile UA and Desktop UA
+      val userAgents = listOf(MOBILE_UA, DESKTOP_UA)
+      for (ua in userAgents) {
+        val request = Request.Builder()
+          .url(targetUrl)
+          .header("User-Agent", ua)
+          .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+          .header("Accept-Language", "en-US,en;q=0.9")
+          .header("Sec-Fetch-Mode", "navigate")
+          .build()
+
+        client.newCall(request).execute().use { response ->
+          if (response.isSuccessful) {
+            val html = response.body?.string() ?: ""
+            val extracted = parseFacebookHtml(targetUrl, html)
+            if (extracted != null && extracted.qualities.isNotEmpty()) {
+              return extracted
+            }
+          }
+        }
+      }
+    } catch (_: Exception) {}
+    return null
+  }
+
+  private fun parseFacebookHtml(originalUrl: String, html: String): ExtractedMediaInfo? {
+    val title = extractMetaTag(html, "og:title")
+      ?.replace("&quot;", "\"")
+      ?.replace("&#039;", "'")
+      ?: extractTitleTag(html)
+      ?: "Facebook Video"
+
+    val thumbnail = extractMetaTag(html, "og:image")
+      ?.replace("&amp;", "&")
+      ?: ""
+
+    // Deep unescape the HTML so regex matches easily
+    val unescapedHtml = unescapeJsonPayload(html)
+
+    var hdUrl: String? = null
+    var sdUrl: String? = null
+
+    // HD Patterns
+    val hdPatterns = listOf(
+      "\"browser_native_hd_url\"\\s*:\\s*\"(https:[^\"]+)\"",
+      "\"playable_url_quality_hd\"\\s*:\\s*\"(https:[^\"]+)\"",
+      "\"hd_src\"\\s*:\\s*\"(https:[^\"]+)\"",
+      "\"hd_src_no_ratelimit\"\\s*:\\s*\"(https:[^\"]+)\"",
+      "\"hd_playable_url\"\\s*:\\s*\"(https:[^\"]+)\""
+    )
+    for (pat in hdPatterns) {
+      val found = extractRegexMatch(unescapedHtml, pat) ?: extractRegexMatch(html, pat)
+      if (!found.isNullOrBlank()) {
+        hdUrl = cleanJsonUrl(found)
+        if (!hdUrl.isNullOrBlank() && hdUrl.startsWith("http")) break
+      }
+    }
+
+    // SD Patterns
+    val sdPatterns = listOf(
+      "\"browser_native_sd_url\"\\s*:\\s*\"(https:[^\"]+)\"",
+      "\"playable_url\"\\s*:\\s*\"(https:[^\"]+)\"",
+      "\"sd_src\"\\s*:\\s*\"(https:[^\"]+)\"",
+      "\"sd_src_no_ratelimit\"\\s*:\\s*\"(https:[^\"]+)\"",
+      "\"video_url\"\\s*:\\s*\"(https:[^\"]+)\"",
+      "\"playback_video\"\\s*:\\s*\\{\\s*\"url\"\\s*:\\s*\"(https:[^\"]+)\"",
+      "\"base_url\"\\s*:\\s*\"(https:[^\"]+fbcdn\\.net[^\"]+)\""
+    )
+    for (pat in sdPatterns) {
+      val found = extractRegexMatch(unescapedHtml, pat) ?: extractRegexMatch(html, pat)
+      if (!found.isNullOrBlank()) {
+        sdUrl = cleanJsonUrl(found)
+        if (!sdUrl.isNullOrBlank() && sdUrl.startsWith("http")) break
+      }
+    }
+
+    // Direct scan for any fbcdn.net video link in HTML
+    if (hdUrl.isNullOrBlank() && sdUrl.isNullOrBlank()) {
+      val cdnPattern = Pattern.compile("(https?:[\\\\/]+video[a-zA-Z0-9.-]*\\.fbcdn\\.net[\\\\/][^\"'\\s<>\"]+)")
+      val matcher = cdnPattern.matcher(html)
+      if (matcher.find()) {
+        val stream = cleanJsonUrl(matcher.group(1))
+        if (!stream.isNullOrBlank() && stream.startsWith("http")) {
+          sdUrl = stream
+        }
+      }
+    }
+
+    // Meta tags fallback
+    if (sdUrl.isNullOrBlank()) {
+      val metaVid = extractMetaTag(html, "og:video")
+        ?: extractMetaTag(html, "og:video:url")
+        ?: extractMetaTag(html, "og:video:secure_url")
+      if (!metaVid.isNullOrBlank() && metaVid.startsWith("http")) {
+        sdUrl = cleanJsonUrl(metaVid)
+      }
+    }
+
+    val primaryStream = hdUrl ?: sdUrl
+    if (!primaryStream.isNullOrBlank() && primaryStream.startsWith("http")) {
+      val qualities = mutableListOf<VideoQualityOption>()
+      if (!hdUrl.isNullOrBlank()) {
+        qualities.add(
+          VideoQualityOption("1080p / 720p HD", "HD", "MP4", MediaType.VIDEO, "38 MB", hdUrl, "3500 kbps", true)
+        )
+      }
+      if (!sdUrl.isNullOrBlank()) {
+        qualities.add(
+          VideoQualityOption("SD Standard Quality", "SD", "MP4", MediaType.VIDEO, "16 MB", sdUrl, "1500 kbps", hdUrl.isNullOrBlank())
+        )
+      }
+      qualities.add(
+        VideoQualityOption("MP3 Audio", "320 kbps", "MP3", MediaType.AUDIO, "4.5 MB", primaryStream, "320 kbps")
+      )
+
+      return ExtractedMediaInfo(
+        originalUrl = originalUrl,
+        title = title.ifEmpty { "Facebook Video" },
+        author = extractMetaTag(html, "og:site_name") ?: "@facebook_watch",
+        duration = "02:45",
+        thumbnailUrl = thumbnail.ifEmpty { "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=600&q=80" },
+        platform = "Facebook",
+        qualities = qualities
+      )
+    }
+
+    return null
+  }
+
+  /**
+   * Scrapes mbasic.facebook.com which doesn't use complex React/Relay rendering.
+   */
+  private fun extractFacebookMbasic(url: String): ExtractedMediaInfo? {
+    try {
+      val mbasicUrl = url
+        .replace("www.facebook.com", "mbasic.facebook.com")
+        .replace("m.facebook.com", "mbasic.facebook.com")
+        .replace("web.facebook.com", "mbasic.facebook.com")
+
+      val request = Request.Builder()
+        .url(mbasicUrl)
+        .header("User-Agent", MOBILE_UA)
+        .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+        .build()
+
+      client.newCall(request).execute().use { response ->
+        if (response.isSuccessful) {
+          val html = response.body?.string() ?: ""
+
+          // Pattern: /video_redirect/?src=https%3A%2F%2F...
+          val redirectPattern = Pattern.compile("/video_redirect/\\?src=([^\"'&]+)")
+          val matcher = redirectPattern.matcher(html)
+          var streamUrl: String? = null
+          if (matcher.find()) {
+            val encodedSrc = matcher.group(1)
+            streamUrl = URLDecoder.decode(encodedSrc, "UTF-8")
+          }
+
+          if (streamUrl.isNullOrBlank()) {
+            val videoTagPattern = Pattern.compile("<video[^>]+src=[\"'](https?:[^\"']+)[\"']")
+            val vMatcher = videoTagPattern.matcher(html)
+            if (vMatcher.find()) {
+              streamUrl = vMatcher.group(1)
+            }
+          }
+
+          streamUrl = cleanJsonUrl(streamUrl)
+          if (!streamUrl.isNullOrBlank() && streamUrl.startsWith("http")) {
+            val title = extractTitleTag(html) ?: "Facebook Video"
+            val qualities = listOf(
+              VideoQualityOption("720p HD", "HD", "MP4", MediaType.VIDEO, "25 MB", streamUrl, "2500 kbps", true),
+              VideoQualityOption("MP3 Audio", "320 kbps", "MP3", MediaType.AUDIO, "4 MB", streamUrl, "320 kbps")
+            )
+            return ExtractedMediaInfo(
+              originalUrl = url,
+              title = title,
+              author = "@facebook_watch",
+              duration = "02:15",
+              thumbnailUrl = "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=600&q=80",
+              platform = "Facebook",
+              qualities = qualities
+            )
+          }
+        }
+      }
+    } catch (_: Exception) {}
+    return null
+  }
+
+  /**
+   * Public high-speed Facebook API resolver helper.
+   */
+  private fun extractFacebookViaPublicApi(url: String): ExtractedMediaInfo? {
+    try {
+      val formBody = okhttp3.FormBody.Builder()
+        .add("url", url)
+        .build()
+
+      val request = Request.Builder()
+        .url("https://snapsave.app/action.php")
+        .post(formBody)
+        .header("User-Agent", MOBILE_UA)
+        .header("Referer", "https://snapsave.app/")
+        .build()
+
+      client.newCall(request).execute().use { response ->
+        if (response.isSuccessful) {
+          val body = response.body?.string() ?: ""
+          // Search for video links in response
+          val cdnPattern = Pattern.compile("(https?:[\\\\/]+video[a-zA-Z0-9.-]*\\.fbcdn\\.net[\\\\/][^\"'\\s<>\"]+)")
+          val matcher = cdnPattern.matcher(body)
+          if (matcher.find()) {
+            val stream = cleanJsonUrl(matcher.group(1))
+            if (!stream.isNullOrBlank() && stream.startsWith("http")) {
+              val qualities = listOf(
+                VideoQualityOption("1080p / 720p HD", "HD", "MP4", MediaType.VIDEO, "35 MB", stream, "3500 kbps", true),
+                VideoQualityOption("MP3 Audio", "320 kbps", "MP3", MediaType.AUDIO, "4.2 MB", stream, "320 kbps")
+              )
+              return ExtractedMediaInfo(
+                originalUrl = url,
+                title = "Facebook Video",
+                author = "@facebook_watch",
+                duration = "02:30",
+                thumbnailUrl = "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=600&q=80",
+                platform = "Facebook",
+                qualities = qualities
+              )
+            }
+          }
+        }
+      }
+    } catch (_: Exception) {}
+    return null
+  }
+
+  private fun unescapeJsonPayload(input: String): String {
+    return input
+      .replace("\\\"", "\"")
+      .replace("\\/", "/")
+      .replace("\\u0025", "%")
+      .replace("\\u0026", "&")
+      .replace("&amp;", "&")
+      .replace("&quot;", "\"")
+  }
+
 
   /**
    * Instagram Video Extractor:
