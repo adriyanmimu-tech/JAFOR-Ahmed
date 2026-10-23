@@ -880,7 +880,7 @@ fun HomeScreen(
         }
       }
 
-      // --- INLINE VIDEO DETAILS & QUALITY SELECTOR (PREMIUM SCREEN CARDS) ---
+      // --- INLINE VIDEO DETAILS & DIRECT DOWNLOAD BUTTONS (MATCHING USER SCREENSHOT) ---
       extractedMedia?.let { media ->
         item {
           PremiumGlassCard(
@@ -892,8 +892,9 @@ fun HomeScreen(
             Column(
               modifier = Modifier
                 .fillMaxWidth()
-                .padding(18.dp)
+                .padding(16.dp)
             ) {
+              // Top Source Bar
               Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -908,7 +909,7 @@ fun HomeScreen(
                   )
                   Spacer(modifier = Modifier.width(8.dp))
                   Text(
-                    text = "Media Details & Quality Options",
+                    text = "Video Ready to Download",
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
                     color = if (isDark) Color.White else Color(0xFF0F172A)
@@ -920,326 +921,259 @@ fun HomeScreen(
                 )
               }
 
-              Spacer(modifier = Modifier.height(14.dp))
-
-              // Video Thumbnail Preview
-              Box(
-                modifier = Modifier
-                  .fillMaxWidth()
-                  .height(180.dp)
-                  .clip(RoundedCornerShape(16.dp))
-                  .border(
-                    1.2.dp,
-                    Brush.linearGradient(listOf(Color(0x90FFFFFF), Color(0x3034D399), Color(0x20FFFFFF))),
-                    RoundedCornerShape(16.dp)
-                  )
-              ) {
-                AsyncImage(
-                  model = media.thumbnailUrl,
-                  contentDescription = media.title,
-                  modifier = Modifier.fillMaxSize(),
-                  contentScale = ContentScale.Crop
-                )
-                // Duration & Max Badge
-                Box(
-                  modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(8.dp)
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(Color.Black.copy(alpha = 0.8f))
-                    .border(0.5.dp, Color(0xFF34D399), RoundedCornerShape(6.dp))
-                    .padding(horizontal = 6.dp, vertical = 2.dp)
-                ) {
-                  Text(
-                    text = media.duration,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF34D399)
-                  )
-                }
-              }
-
               Spacer(modifier = Modifier.height(12.dp))
 
-              // Title and Author
-              Text(
-                text = media.title,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold,
-                color = if (isDark) Color.White else Color(0xFF0F172A),
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-              )
-              Spacer(modifier = Modifier.height(4.dp))
-              Text(
-                text = "Author: ${media.author.ifEmpty { "Creator" }} • Duration: ${media.duration}",
-                fontSize = 11.sp,
-                color = if (isDark) Color(0xFFA7B5B0) else Color(0xFF6B7280)
-              )
-
-              Spacer(modifier = Modifier.height(14.dp))
-
-              // 1-Tap Caption Copy Box (Frosted Glass)
-              PremiumGlassCard(
-                isDark = isDark,
+              // Video Preview Row (Thumbnail with Center Play Button + Title/Hashtags)
+              Row(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(14.dp),
-                borderWidth = 1.dp
+                verticalAlignment = Alignment.Top
               ) {
-                Column(
+                Box(
                   modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp)
+                    .size(width = 110.dp, height = 110.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color(0xFF0B141B))
+                    .border(
+                      1.dp,
+                      Brush.linearGradient(listOf(Color(0x90FFFFFF), Color(0x3010B981))),
+                      RoundedCornerShape(16.dp)
+                    )
                 ) {
-                  Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                  AsyncImage(
+                    model = media.thumbnailUrl,
+                    contentDescription = media.title,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                  )
+                  // Play Icon in Center
+                  Box(
+                    modifier = Modifier
+                      .size(36.dp)
+                      .clip(CircleShape)
+                      .background(Color.Black.copy(alpha = 0.7f))
+                      .align(Alignment.Center),
+                    contentAlignment = Alignment.Center
                   ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                      Icon(
-                        imageVector = Icons.Default.ContentCopy,
-                        contentDescription = "Caption",
-                        tint = Color(0xFF10B981),
-                        modifier = Modifier.size(16.dp)
-                      )
-                      Spacer(modifier = Modifier.width(6.dp))
-                      Text(
-                        text = "Video Title & Caption",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF10B981)
-                      )
-                    }
-
-                    Button(
-                      onClick = {
-                        val clipText = media.title
-                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                        clipboard.setPrimaryClip(ClipData.newPlainText("Video Caption", clipText))
-                        homeCaptionCopied = true
-                        Toast.makeText(context, "Caption copied to clipboard! ✓", Toast.LENGTH_SHORT).show()
-                        coroutineScope.launch {
-                          delay(2500)
-                          homeCaptionCopied = false
-                        }
-                      },
-                      colors = ButtonDefaults.buttonColors(
-                        containerColor = if (homeCaptionCopied) Color(0xFF10B981) else Color(0x3510B981),
-                        contentColor = if (homeCaptionCopied) Color.Black else Color.White
-                      ),
-                      shape = RoundedCornerShape(8.dp),
-                      contentPadding = ButtonDefaults.TextButtonContentPadding,
-                      modifier = Modifier.height(32.dp)
-                    ) {
-                      Icon(
-                        imageVector = if (homeCaptionCopied) Icons.Default.Check else Icons.Default.ContentCopy,
-                        contentDescription = "Copy",
-                        modifier = Modifier.size(14.dp)
-                      )
-                      Spacer(modifier = Modifier.width(4.dp))
-                      Text(
-                        text = if (homeCaptionCopied) "Copied!" else "Copy",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold
-                      )
-                    }
+                    Icon(
+                      imageVector = Icons.Default.Movie,
+                      contentDescription = "Play",
+                      tint = Color(0xFF10B981),
+                      modifier = Modifier.size(20.dp)
+                    )
                   }
+                  // Duration Overlay
+                  Box(
+                    modifier = Modifier
+                      .align(Alignment.BottomEnd)
+                      .padding(4.dp)
+                      .background(Color.Black.copy(alpha = 0.85f), RoundedCornerShape(4.dp))
+                      .padding(horizontal = 5.dp, vertical = 2.dp)
+                  ) {
+                    Text(
+                      text = media.duration,
+                      fontSize = 10.sp,
+                      fontWeight = FontWeight.Bold,
+                      color = Color(0xFF34D399)
+                    )
+                  }
+                }
 
-                  Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.width(12.dp))
 
+                Column(modifier = Modifier.weight(1f)) {
                   Text(
                     text = media.title,
-                    fontSize = 12.sp,
-                    lineHeight = 16.sp,
-                    color = if (isDark) Color(0xFFD1D5DB) else Color(0xFF374151),
-                    maxLines = 3,
-                    overflow = TextOverflow.Ellipsis
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    lineHeight = 18.sp,
+                    maxLines = 4,
+                    overflow = TextOverflow.Ellipsis,
+                    color = if (isDark) Color(0xFFF1F5F9) else Color(0xFF0F172A)
+                  )
+                  Spacer(modifier = Modifier.height(6.dp))
+                  Text(
+                    text = "By ${media.author.ifEmpty { "Creator" }}",
+                    fontSize = 11.sp,
+                    color = Color(0xFF10B981),
+                    fontWeight = FontWeight.SemiBold
                   )
                 }
               }
 
-              Spacer(modifier = Modifier.height(16.dp))
+              Spacer(modifier = Modifier.height(14.dp))
 
+              // Copy Caption & Hashtags Action
               Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                  .fillMaxWidth()
+                  .clip(RoundedCornerShape(10.dp))
+                  .background(if (isDark) Color(0x2510B981) else Color(0x1810B981))
+                  .clickable {
+                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    clipboard.setPrimaryClip(ClipData.newPlainText("Video Caption", media.title))
+                    homeCaptionCopied = true
+                    Toast.makeText(context, "Title & hashtags copied! 📋", Toast.LENGTH_SHORT).show()
+                    coroutineScope.launch {
+                      delay(2500)
+                      homeCaptionCopied = false
+                    }
+                  }
+                  .padding(horizontal = 12.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
               ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                  Icon(
+                    imageVector = if (homeCaptionCopied) Icons.Default.Check else Icons.Default.ContentCopy,
+                    contentDescription = "Copy",
+                    tint = Color(0xFF10B981),
+                    modifier = Modifier.size(16.dp)
+                  )
+                  Spacer(modifier = Modifier.width(6.dp))
+                  Text(
+                    text = if (homeCaptionCopied) "✓ Caption & Hashtags Copied!" else "Copy Caption & Hashtags",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF10B981)
+                  )
+                }
                 Text(
-                  text = "Select Quality & Format:",
-                  fontSize = 14.sp,
-                  fontWeight = FontWeight.Bold,
-                  color = if (isDark) Color.White else Color(0xFF0F172A)
-                )
-                Text(
-                  text = "Best available quality",
-                  fontSize = 11.sp,
-                  fontWeight = FontWeight.Bold,
-                  color = Color(0xFF10B981)
+                  text = "1-Tap Copy",
+                  fontSize = 10.sp,
+                  color = if (isDark) Color(0xFFA7B5B0) else Color(0xFF6B7280)
                 )
               }
 
-              Spacer(modifier = Modifier.height(10.dp))
+              Spacer(modifier = Modifier.height(14.dp))
 
-              // Quality options list: each item is a sleek PremiumGlassCard
-              Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                media.qualities.forEach { quality ->
-                  val isSelected = selectedQuality == quality
-                  val isAudio = quality.mediaType == MediaType.AUDIO
-                  val isRecommended = quality.isVipBest
-
-                  PremiumGlassCard(
-                    isDark = isDark,
-                    isSelected = isSelected,
-                    shape = RoundedCornerShape(16.dp),
-                    borderWidth = if (isSelected) 1.5.dp else 1.dp,
-                    modifier = Modifier
-                      .fillMaxWidth()
-                      .clickable { viewModel.selectQuality(quality) }
-                  ) {
-                    Row(
-                      modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 14.dp, vertical = 12.dp),
-                      verticalAlignment = Alignment.CenterVertically,
-                      horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                      Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                          modifier = Modifier
-                            .size(34.dp)
-                            .clip(CircleShape)
-                            .background(
-                              if (isSelected) Color(0xFF10B981).copy(alpha = 0.25f)
-                              else (if (isDark) Color(0x22FFFFFF) else Color(0x20000000))
-                            )
-                            .border(
-                              0.8.dp,
-                              if (isSelected) Color(0xFF34D399) else Color(0x30FFFFFF),
-                              CircleShape
-                            ),
-                          contentAlignment = Alignment.Center
-                        ) {
-                          Icon(
-                            imageVector = if (isAudio) Icons.Default.Audiotrack else Icons.Default.Movie,
-                            contentDescription = quality.format,
-                            tint = if (isSelected) Color(0xFF34D399) else (if (isDark) Color.White.copy(alpha = 0.8f) else Color.DarkGray),
-                            modifier = Modifier.size(18.dp)
-                          )
-                        }
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                          Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                              text = quality.label,
-                              fontSize = 13.sp,
-                              fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                              color = if (isSelected) Color(0xFF10B981) else (if (isDark) Color.White else Color(0xFF0F172A))
-                            )
-                            if (isRecommended) {
-                              Spacer(modifier = Modifier.width(6.dp))
-                              Box(
-                                modifier = Modifier
-                                  .background(Color(0xFF10B981), RoundedCornerShape(4.dp))
-                                  .padding(horizontal = 5.dp, vertical = 1.5.dp)
-                              ) {
-                                Text(
-                                  text = "BEST AVAILABLE",
-                                  fontSize = 8.sp,
-                                  fontWeight = FontWeight.Black,
-                                  color = Color.Black
-                                )
-                              }
-                            }
-                          }
-                          Spacer(modifier = Modifier.height(2.dp))
-                          Text(
-                            text = "${quality.format} • ${quality.bitrate}",
-                            fontSize = 10.sp,
-                            color = if (isDark) Color(0xFFA7B5B0) else Color(0xFF6B7280)
-                          )
-                        }
-                      }
-
-                      Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                          text = quality.estimatedSize,
-                          fontSize = 12.sp,
-                          fontWeight = FontWeight.Bold,
-                          color = if (isSelected) Color(0xFF10B981) else (if (isDark) Color(0xFFB5BAC9) else Color(0xFF475569))
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Box(
-                          modifier = Modifier
-                            .size(20.dp)
-                            .clip(CircleShape)
-                            .border(
-                              width = if (isSelected) 2.dp else 1.dp,
-                              color = if (isSelected) Color(0xFF10B981) else Color(0x60FFFFFF),
-                              shape = CircleShape
-                            )
-                            .background(if (isSelected) Color(0xFF10B981) else Color.Transparent),
-                          contentAlignment = Alignment.Center
-                        ) {
-                          if (isSelected) {
-                            Icon(
-                              imageVector = Icons.Default.Check,
-                              contentDescription = "Selected",
-                              tint = Color.Black,
-                              modifier = Modifier.size(13.dp)
-                            )
-                          }
-                        }
-                      }
-                    }
+              // --- 3 PRIMARY DIRECT DOWNLOAD ACTION BUTTONS (EXACT REPLICA OF USER SCREENSHOT) ---
+              Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                // Button 1: Download MP4 [1] (Standard / 720p)
+                Button(
+                  onClick = { viewModel.downloadDirectSd() },
+                  modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                  shape = RoundedCornerShape(12.dp),
+                  colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF10B981),
+                    contentColor = Color.Black
+                  )
+                ) {
+                  Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                      imageVector = Icons.Default.Download,
+                      contentDescription = "Download MP4 [1]",
+                      modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                      text = "Download MP4 [1] (Standard)",
+                      fontSize = 14.sp,
+                      fontWeight = FontWeight.Bold
+                    )
                   }
                 }
-              }
 
-              Spacer(modifier = Modifier.height(16.dp))
-
-              // Direct Download Button (3D Embossed Emerald Glass Button)
-              val curOpt = selectedQuality
-              val currentQualityLabel = curOpt?.resolution?.ifEmpty { curOpt.label } ?: "Choose quality"
-              val currentFormat = curOpt?.format?.uppercase() ?: "MP4"
-
-              Box(
-                modifier = Modifier
-                  .fillMaxWidth()
-                  .height(50.dp)
-                  .clip(RoundedCornerShape(16.dp))
-                  .background(
-                    Brush.horizontalGradient(
-                      listOf(Color(0xFF10B981), Color(0xFF34D399), Color(0xFF059669))
-                    )
+                // Button 2: Download MP4 HD (1080p FHD High Quality)
+                Button(
+                  onClick = { viewModel.downloadDirectHd() },
+                  modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                  shape = RoundedCornerShape(12.dp),
+                  colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF059669),
+                    contentColor = Color.White
                   )
-                  .border(
-                    width = 1.2.dp,
-                    brush = Brush.linearGradient(
-                      listOf(Color(0xDDFFFFFF), Color(0x4034D399), Color(0x80FFFFFF))
-                    ),
-                    shape = RoundedCornerShape(16.dp)
-                  )
-                  .clickable(enabled = selectedQuality != null) { viewModel.confirmDownload() },
-                contentAlignment = Alignment.Center
-              ) {
-                Row(
-                  verticalAlignment = Alignment.CenterVertically,
-                  horizontalArrangement = Arrangement.Center
                 ) {
-                  Icon(
-                    imageVector = Icons.Default.Download,
-                    contentDescription = "Download Now",
-                    tint = Color.Black,
-                    modifier = Modifier.size(20.dp)
+                  Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                      imageVector = Icons.Default.Hd,
+                      contentDescription = "Download MP4 HD",
+                      modifier = Modifier.size(22.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                      text = "Download MP4 HD (1080p Full Quality)",
+                      fontSize = 14.sp,
+                      fontWeight = FontWeight.Bold
+                    )
+                  }
+                }
+
+                // Button 3: Download MP3 (Audio Extraction)
+                Button(
+                  onClick = { viewModel.downloadDirectAudio() },
+                  modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                  shape = RoundedCornerShape(12.dp),
+                  colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF047857),
+                    contentColor = Color.White
                   )
-                  Spacer(modifier = Modifier.width(8.dp))
+                ) {
+                  Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                      imageVector = Icons.Default.Audiotrack,
+                      contentDescription = "Download MP3",
+                      modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                      text = "Download MP3 (Audio Only)",
+                      fontSize = 14.sp,
+                      fontWeight = FontWeight.Bold
+                    )
+                  }
+                }
+
+                // Button 4: Manual Quality & Resolution Picker (Opens Modal with 1080p, 720p, 480p, 360p, MP3)
+                OutlinedButton(
+                  onClick = { viewModel.openQualityModal() },
+                  modifier = Modifier
+                    .fillMaxWidth()
+                    .height(44.dp),
+                  shape = RoundedCornerShape(12.dp),
+                  border = androidx.compose.foundation.BorderStroke(
+                    1.2.dp,
+                    Color(0xFF10B981)
+                  )
+                ) {
+                  Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                      imageVector = Icons.Default.Speed,
+                      contentDescription = "More Resolutions",
+                      tint = Color(0xFF10B981),
+                      modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                      text = "⚙️ Manual Quality Picker (4K, 1080p, 720p, 480p, 360p, MP3)",
+                      fontSize = 12.sp,
+                      fontWeight = FontWeight.Bold,
+                      color = Color(0xFF10B981)
+                    )
+                  }
+                }
+
+                // Button 5: Download more videos (Matching bottom action in screenshot)
+                Button(
+                  onClick = { viewModel.resetMedia() },
+                  modifier = Modifier
+                    .fillMaxWidth()
+                    .height(44.dp),
+                  shape = RoundedCornerShape(12.dp),
+                  colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isDark) Color(0xFF1E293B) else Color(0xFFE2E8F0),
+                    contentColor = if (isDark) Color.White else Color(0xFF0F172A)
+                  )
+                ) {
                   Text(
-                    text = "Start Download ($currentQualityLabel • $currentFormat)",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    text = "Download more videos",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold
                   )
                 }
               }
@@ -1253,23 +1187,26 @@ fun HomeScreen(
       }
     }
 
-    // Modal Quality Selection Popup
-    extractedMedia?.let { media ->
-      val isAntiCopyrightEnabled by viewModel.isAntiCopyrightEnabled.collectAsState()
-      val fypShieldOptions by viewModel.fypShieldOptions.collectAsState()
-      QualitySelectModal(
-        mediaInfo = media,
-        selectedQuality = selectedQuality,
-        isDark = isDark,
-        isAntiCopyrightEnabled = isAntiCopyrightEnabled,
-        fypShieldOptions = fypShieldOptions,
-        onToggleShieldOption = { viewModel.toggleShieldOption(it) },
-        onToggleAntiCopyright = { viewModel.toggleAntiCopyright(it) },
-        onShowFypTips = { viewModel.showFypTipsDialog() },
-        onQualitySelected = { viewModel.selectQuality(it) },
-        onConfirmDownload = { viewModel.confirmDownload() },
-        onDismiss = { viewModel.dismissQualityModal() }
-      )
+    // Modal Quality Selection Popup (Triggered when user clicks Manual Quality Picker)
+    val showQualityModal by viewModel.showQualityModal.collectAsState()
+    if (showQualityModal) {
+      extractedMedia?.let { media ->
+        val isAntiCopyrightEnabled by viewModel.isAntiCopyrightEnabled.collectAsState()
+        val fypShieldOptions by viewModel.fypShieldOptions.collectAsState()
+        QualitySelectModal(
+          mediaInfo = media,
+          selectedQuality = selectedQuality,
+          isDark = isDark,
+          isAntiCopyrightEnabled = isAntiCopyrightEnabled,
+          fypShieldOptions = fypShieldOptions,
+          onToggleShieldOption = { viewModel.toggleShieldOption(it) },
+          onToggleAntiCopyright = { viewModel.toggleAntiCopyright(it) },
+          onShowFypTips = { viewModel.showFypTipsDialog() },
+          onQualitySelected = { viewModel.selectQuality(it) },
+          onConfirmDownload = { viewModel.confirmDownload() },
+          onDismiss = { viewModel.dismissQualityModal() }
+        )
+      }
     }
 
     val showFypTips by viewModel.showFypTips.collectAsState()

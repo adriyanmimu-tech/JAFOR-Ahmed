@@ -172,13 +172,65 @@ class DownloaderViewModel(application: Application) : AndroidViewModel(applicati
     }
   }
 
+  private val _showQualityModal = MutableStateFlow(false)
+  val showQualityModal: StateFlow<Boolean> = _showQualityModal.asStateFlow()
+
+  fun openQualityModal() {
+    _showQualityModal.value = true
+  }
+
+  fun dismissQualityModal() {
+    _showQualityModal.value = false
+  }
+
+  fun resetMedia() {
+    _extractedMedia.value = null
+    _selectedQuality.value = null
+    _showQualityModal.value = false
+    _inputUrl.value = ""
+    _errorMessage.value = null
+  }
+
   fun selectQuality(quality: VideoQualityOption) {
     _selectedQuality.value = quality
   }
 
-  fun dismissQualityModal() {
-    _extractedMedia.value = null
-    _selectedQuality.value = null
+  fun downloadWithQuality(quality: VideoQualityOption) {
+    _selectedQuality.value = quality
+    confirmDownload()
+  }
+
+  fun downloadDirectHd() {
+    val media = _extractedMedia.value ?: return
+    val hd = media.qualities.firstOrNull { it.mediaType == com.example.data.model.MediaType.VIDEO && it.isVipBest }
+      ?: media.qualities.firstOrNull { it.mediaType == com.example.data.model.MediaType.VIDEO && it.resolution.contains("1080", ignoreCase = true) }
+      ?: media.qualities.firstOrNull { it.mediaType == com.example.data.model.MediaType.VIDEO }
+    if (hd != null) {
+      downloadWithQuality(hd)
+    }
+  }
+
+  fun downloadDirectSd() {
+    val media = _extractedMedia.value ?: return
+    val sd = media.qualities.firstOrNull {
+      it.mediaType == com.example.data.model.MediaType.VIDEO &&
+        (it.resolution.contains("720", ignoreCase = true) || it.resolution.contains("480", ignoreCase = true)) &&
+        !it.isVipBest
+    }
+      ?: media.qualities.filter { it.mediaType == com.example.data.model.MediaType.VIDEO }.getOrNull(1)
+      ?: media.qualities.firstOrNull { it.mediaType == com.example.data.model.MediaType.VIDEO }
+    if (sd != null) {
+      downloadWithQuality(sd)
+    }
+  }
+
+  fun downloadDirectAudio() {
+    val media = _extractedMedia.value ?: return
+    val audio = media.qualities.firstOrNull { it.mediaType == com.example.data.model.MediaType.AUDIO }
+      ?: media.qualities.firstOrNull()
+    if (audio != null) {
+      downloadWithQuality(audio)
+    }
   }
 
   fun confirmDownload() {

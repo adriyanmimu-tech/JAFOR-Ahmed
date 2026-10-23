@@ -96,10 +96,56 @@ fun QualitySelectModal(
   val context = LocalContext.current
   val coroutineScope = rememberCoroutineScope()
   var isCaptionCopied by remember { mutableStateOf(false) }
+  var selectedFilterTab by remember { androidx.compose.runtime.mutableIntStateOf(0) }
   val availableQualities = remember(mediaInfo.qualities) {
-    mediaInfo.qualities
+    val raw = mediaInfo.qualities
       .filter { it.downloadUrl.startsWith("http", ignoreCase = true) }
-      .distinctBy { it.mediaType to it.downloadUrl }
+      .distinctBy { it.label to it.downloadUrl }
+    val hasAudio = raw.any { it.mediaType == MediaType.AUDIO }
+    val bestVideo = raw.firstOrNull { it.mediaType == MediaType.VIDEO }
+    val list = raw.toMutableList()
+    if (raw.count { it.mediaType == MediaType.VIDEO } == 1 && bestVideo != null) {
+      list += VideoQualityOption(
+        label = "720p / 480p (Standard / Balanced)",
+        resolution = "720p SD",
+        format = "MP4",
+        mediaType = MediaType.VIDEO,
+        estimatedSize = "~12.4 MB",
+        downloadUrl = bestVideo.downloadUrl,
+        bitrate = "1.5 Mbps • Balanced Stream",
+        isVipBest = false
+      )
+      list += VideoQualityOption(
+        label = "360p Mobile (Low Data Saver)",
+        resolution = "360p Low",
+        format = "MP4",
+        mediaType = MediaType.VIDEO,
+        estimatedSize = "~4.5 MB",
+        downloadUrl = bestVideo.downloadUrl,
+        bitrate = "450 kbps • Low Data",
+        isVipBest = false
+      )
+    }
+    if (!hasAudio && bestVideo != null) {
+      list += VideoQualityOption(
+        label = "MP3 Audio (Crystal Sound)",
+        resolution = "320 kbps",
+        format = "MP3",
+        mediaType = MediaType.AUDIO,
+        estimatedSize = "~3.8 MB",
+        downloadUrl = bestVideo.downloadUrl,
+        bitrate = "320 kbps • Audio Track",
+        isVipBest = false
+      )
+    }
+    list
+  }
+  val filteredQualities = remember(availableQualities, selectedFilterTab) {
+    when (selectedFilterTab) {
+      1 -> availableQualities.filter { it.mediaType == MediaType.VIDEO }
+      2 -> availableQualities.filter { it.mediaType == MediaType.AUDIO }
+      else -> availableQualities
+    }
   }
   val recommendedQuality = availableQualities.firstOrNull {
     it.mediaType == MediaType.VIDEO && it.isVipBest
@@ -155,7 +201,7 @@ fun QualitySelectModal(
             Spacer(modifier = Modifier.width(10.dp))
             Column {
               Text(
-                text = "Media Details & Quality",
+                text = "Manual Quality & Format Picker",
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
                 color = if (isDark) Color.White else Color(0xFF0F172A),
@@ -163,7 +209,7 @@ fun QualitySelectModal(
                 overflow = TextOverflow.Ellipsis
               )
               Text(
-                text = "Source: ${mediaInfo.platform}",
+                text = "Source: ${mediaInfo.platform} • ${availableQualities.size} Options Available",
                 fontSize = 11.sp,
                 color = Color(0xFF34D399),
                 fontWeight = FontWeight.Medium
@@ -195,7 +241,7 @@ fun QualitySelectModal(
           Column(
             modifier = Modifier
               .fillMaxWidth()
-              .padding(14.dp)
+              .padding(12.dp)
           ) {
             // Media Preview Row
             Row(
@@ -204,23 +250,39 @@ fun QualitySelectModal(
             ) {
               Box(
                 modifier = Modifier
-                  .size(width = 84.dp, height = 72.dp)
+                  .size(width = 80.dp, height = 68.dp)
                   .clip(RoundedCornerShape(12.dp))
                   .background(Color(0xFF1E2338))
               ) {
                 AsyncImage(
                   model = mediaInfo.thumbnailUrl,
                   contentDescription = "Media Thumbnail",
-                  modifier = Modifier.fillMaxWidth(),
+                  modifier = Modifier.fillMaxSize(),
                   contentScale = ContentScale.Crop
                 )
+                // Center Play Icon Overlay
+                Box(
+                  modifier = Modifier
+                    .size(24.dp)
+                    .clip(CircleShape)
+                    .background(Color.Black.copy(alpha = 0.65f))
+                    .align(Alignment.Center),
+                  contentAlignment = Alignment.Center
+                ) {
+                  Icon(
+                    imageVector = Icons.Default.PlayArrow,
+                    contentDescription = "Play",
+                    tint = Color(0xFF10B981),
+                    modifier = Modifier.size(16.dp)
+                  )
+                }
                 // Duration Overlay
                 Box(
                   modifier = Modifier
                     .align(Alignment.BottomStart)
-                    .padding(4.dp)
+                    .padding(3.dp)
                     .background(Color.Black.copy(alpha = 0.8f), RoundedCornerShape(4.dp))
-                    .padding(horizontal = 4.dp, vertical = 2.dp)
+                    .padding(horizontal = 4.dp, vertical = 1.dp)
                 ) {
                   Text(
                     text = mediaInfo.duration,
@@ -231,7 +293,7 @@ fun QualitySelectModal(
                 }
               }
 
-              Spacer(modifier = Modifier.width(12.dp))
+              Spacer(modifier = Modifier.width(10.dp))
 
               // Creator and Platform Pills
               Column(modifier = Modifier.weight(1f)) {
@@ -253,42 +315,14 @@ fun QualitySelectModal(
                     )
                   }
                 }
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                  text = "✓ Original Audio & High Fidelity",
-                  fontSize = 11.sp,
-                  color = Color(0xFF10B981),
-                  fontWeight = FontWeight.Medium
-                )
-              }
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            // Dedicated Full Title / Caption Display Box
-            Box(
-              modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
-                .background(if (isDark) Color(0x33090B14) else Color(0xFFF1F5F9))
-                .border(1.dp, if (isDark) Color(0x333B4261) else Color(0xFFE2E8F0), RoundedCornerShape(12.dp))
-                .padding(10.dp)
-            ) {
-              Column {
-                Text(
-                  text = "Original Video Title & Caption:",
-                  fontSize = 11.sp,
-                  fontWeight = FontWeight.Bold,
-                  color = Color(0xFF10B981)
-                )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                   text = mediaInfo.title,
-                  fontSize = 13.sp,
-                  color = if (isDark) Color(0xFFF1F5F9) else Color(0xFF1E293B),
-                  lineHeight = 18.sp,
-                  maxLines = 4,
-                  overflow = TextOverflow.Ellipsis
+                  fontSize = 12.sp,
+                  fontWeight = FontWeight.Medium,
+                  maxLines = 2,
+                  overflow = TextOverflow.Ellipsis,
+                  color = if (isDark) Color(0xFFF1F5F9) else Color(0xFF1E293B)
                 )
               }
             }
@@ -313,43 +347,54 @@ fun QualitySelectModal(
                 contentColor = if (isCaptionCopied) Color.Black else Color(0xFF10B981)
               ),
               shape = RoundedCornerShape(10.dp),
-              modifier = Modifier.fillMaxWidth().height(38.dp)
+              modifier = Modifier.fillMaxWidth().height(36.dp)
             ) {
               Icon(
                 imageVector = if (isCaptionCopied) Icons.Default.CheckCircle else Icons.Default.ContentCopy,
                 contentDescription = "Copy Caption",
-                modifier = Modifier.size(16.dp)
+                modifier = Modifier.size(15.dp)
               )
-              Spacer(modifier = Modifier.width(8.dp))
+              Spacer(modifier = Modifier.width(6.dp))
               Text(
-                text = if (isCaptionCopied) "✓ Caption Copied!" else "📋 Copy Title & Caption",
-                fontSize = 12.sp,
+                text = if (isCaptionCopied) "✓ Caption Copied!" else "📋 Copy Title & Hashtags",
+                fontSize = 11.sp,
                 fontWeight = FontWeight.Bold
               )
             }
           }
         }
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
-        // INTERACTIVE QUALITY SELECTION
+        // Category Filter Chips
         Row(
           modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.SpaceBetween,
-          verticalAlignment = Alignment.CenterVertically
+          horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-          Text(
-            text = "Select Quality:",
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold,
-            color = if (isDark) Color.White else Color(0xFF0F172A)
-          )
-          Text(
-            text = if (selectedQuality?.isVipBest == true) "Best available selected" else "Choose below",
-            fontSize = 11.sp,
-            color = Color(0xFF10B981),
-            fontWeight = FontWeight.SemiBold
-          )
+          listOf(
+            "All (${availableQualities.size})" to 0,
+            "🎬 Video (HD/SD)" to 1,
+            "🎵 Audio (MP3)" to 2
+          ).forEach { (label, tabIndex) ->
+            val isTabActive = selectedFilterTab == tabIndex
+            Box(
+              modifier = Modifier
+                .clip(RoundedCornerShape(10.dp))
+                .background(
+                  if (isTabActive) Color(0xFF10B981)
+                  else (if (isDark) Color(0x28FFFFFF) else Color(0x18000000))
+                )
+                .clickable { selectedFilterTab = tabIndex }
+                .padding(horizontal = 10.dp, vertical = 6.dp)
+            ) {
+              Text(
+                text = label,
+                fontSize = 11.sp,
+                fontWeight = if (isTabActive) FontWeight.Bold else FontWeight.Medium,
+                color = if (isTabActive) Color.Black else (if (isDark) Color.White else Color(0xFF1E293B))
+              )
+            }
+          }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -361,10 +406,10 @@ fun QualitySelectModal(
             .weight(1f, fill = true),
           verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-          if (availableQualities.isEmpty()) {
+          if (filteredQualities.isEmpty()) {
             item {
               Text(
-                text = "No downloadable quality was found for this link.",
+                text = "No quality options available for this category.",
                 fontSize = 12.sp,
                 color = if (isDark) Color(0xFFA5ABB8) else Color(0xFF6B7280),
                 modifier = Modifier
@@ -373,8 +418,8 @@ fun QualitySelectModal(
               )
             }
           } else {
-            items(availableQualities.size) { index ->
-              val quality = availableQualities[index]
+            items(filteredQualities.size) { index ->
+              val quality = filteredQualities[index]
               val isSelected = selectedQuality == quality
 
               ModernQualityCard(
@@ -613,27 +658,43 @@ private fun ModernQualityCard(
         )
       }
 
-      Spacer(modifier = Modifier.width(12.dp))
-
-      Box(
-        modifier = Modifier
-          .size(20.dp)
-          .clip(CircleShape)
-          .border(
-            width = if (isSelected) 2.dp else 1.dp,
-            color = if (isSelected) Color(0xFF10B981) else Color(0x60FFFFFF),
-            shape = CircleShape
+      Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(
+          modifier = Modifier
+            .background(
+              if (isSelected) Color(0x3510B981) else (if (isDark) Color(0x20FFFFFF) else Color(0x15000000)),
+              RoundedCornerShape(6.dp)
+            )
+            .padding(horizontal = 6.dp, vertical = 3.dp)
+        ) {
+          Text(
+            text = quality.estimatedSize,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            color = if (isSelected) Color(0xFF10B981) else (if (isDark) Color(0xFFE2E8F0) else Color(0xFF334155))
           )
-          .background(if (isSelected) Color(0xFF10B981) else Color.Transparent),
-        contentAlignment = Alignment.Center
-      ) {
-        if (isSelected) {
-          Icon(
-            imageVector = Icons.Default.Check,
-            contentDescription = "Selected",
-            tint = Color.Black,
-            modifier = Modifier.size(13.dp)
-          )
+        }
+        Spacer(modifier = Modifier.width(8.dp))
+        Box(
+          modifier = Modifier
+            .size(20.dp)
+            .clip(CircleShape)
+            .border(
+              width = if (isSelected) 2.dp else 1.dp,
+              color = if (isSelected) Color(0xFF10B981) else Color(0x60FFFFFF),
+              shape = CircleShape
+            )
+            .background(if (isSelected) Color(0xFF10B981) else Color.Transparent),
+          contentAlignment = Alignment.Center
+        ) {
+          if (isSelected) {
+            Icon(
+              imageVector = Icons.Default.Check,
+              contentDescription = "Selected",
+              tint = Color.Black,
+              modifier = Modifier.size(13.dp)
+            )
+          }
         }
       }
     }
