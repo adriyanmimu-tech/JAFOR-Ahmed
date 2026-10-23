@@ -48,20 +48,23 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build APK with Gradle
-        run: ./gradlew assembleDebug --no-daemon
+        run: ./gradlew testDebugUnitTest assembleDebug --no-daemon
 
       - name: Prepare APK
+        if: github.ref == 'refs/heads/main'
         run: |
           mkdir -p build-apks
           cp app/build/outputs/apk/debug/app-debug.apk build-apks/VidMax-VIP.apk
 
       - name: Upload APK
+        if: github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v4
         with:
           name: VidMax-VIP-APK
           path: build-apks/VidMax-VIP.apk
 
       - name: Publish to GitHub Releases
+        if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         continue-on-error: true
         with:

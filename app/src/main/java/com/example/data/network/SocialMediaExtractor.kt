@@ -33,72 +33,58 @@ class SocialMediaExtractor {
     audioStream: String? = null,
     platform: String = "Social"
   ): List<VideoQualityOption> {
-    val bestStream = hdStream ?: sdStream ?: audioStream ?: ""
-    val secondStream = sdStream ?: hdStream ?: bestStream
-    val soundStream = audioStream ?: bestStream
+    val high = hdStream
+      ?.trim()
+      ?.takeIf { it.startsWith("http://", ignoreCase = true) || it.startsWith("https://", ignoreCase = true) }
+    val standard = sdStream
+      ?.trim()
+      ?.takeIf { it.startsWith("http://", ignoreCase = true) || it.startsWith("https://", ignoreCase = true) }
+      ?.takeIf { it != high }
+    val bestStream = high ?: standard
+    val audio = audioStream
+      ?.trim()
+      ?.takeIf { it.startsWith("http://", ignoreCase = true) || it.startsWith("https://", ignoreCase = true) }
+      ?.takeIf { it != bestStream && it != standard }
+    val qualities = mutableListOf<VideoQualityOption>()
 
-    return listOf(
-      VideoQualityOption(
-        label = "4K Ultra HD (2160p 60fps)",
-        resolution = "4K (2160p)",
+    if (bestStream != null) {
+      qualities += VideoQualityOption(
+        label = if (standard != null) "Best available video" else "Available video",
+        resolution = if (standard != null) "Best available" else "Source quality",
         format = "MP4",
         mediaType = MediaType.VIDEO,
-        estimatedSize = "94 MB",
+        estimatedSize = "Size varies",
         downloadUrl = bestStream,
-        bitrate = "18.5 Mbps",
+        bitrate = "Original stream",
         isVipBest = true
-      ),
-      VideoQualityOption(
-        label = "2K Quad HD (1440p)",
-        resolution = "1440p",
+      )
+    }
+
+    if (standard != null) {
+      qualities += VideoQualityOption(
+        label = "Standard video",
+        resolution = "Standard source",
         format = "MP4",
         mediaType = MediaType.VIDEO,
-        estimatedSize = "58 MB",
-        downloadUrl = bestStream,
-        bitrate = "8.2 Mbps",
-        isVipBest = false
-      ),
-      VideoQualityOption(
-        label = "1080p Full HD (Crystal Clear)",
-        resolution = "1080p",
-        format = "MP4",
-        mediaType = MediaType.VIDEO,
-        estimatedSize = "36 MB",
-        downloadUrl = bestStream,
-        bitrate = "4.5 Mbps",
-        isVipBest = false
-      ),
-      VideoQualityOption(
-        label = "720p HD (High Speed)",
-        resolution = "720p",
-        format = "MP4",
-        mediaType = MediaType.VIDEO,
-        estimatedSize = "21 MB",
-        downloadUrl = secondStream,
-        bitrate = "2.5 Mbps",
-        isVipBest = false
-      ),
-      VideoQualityOption(
-        label = "480p SD (Data Saver)",
-        resolution = "480p",
-        format = "MP4",
-        mediaType = MediaType.VIDEO,
-        estimatedSize = "11 MB",
-        downloadUrl = secondStream,
-        bitrate = "1.2 Mbps",
-        isVipBest = false
-      ),
-      VideoQualityOption(
-        label = "MP3 Audio (320 kbps Studio)",
-        resolution = "320 kbps",
+        estimatedSize = "Size varies",
+        downloadUrl = standard,
+        bitrate = "Standard stream"
+      )
+    }
+
+    if (audio != null) {
+      qualities += VideoQualityOption(
+        label = "Available audio",
+        resolution = "Audio",
         format = "MP3",
         mediaType = MediaType.AUDIO,
-        estimatedSize = "4.8 MB",
-        downloadUrl = soundStream,
-        bitrate = "320 kbps",
-        isVipBest = false
+        estimatedSize = "Size varies",
+        downloadUrl = audio,
+        bitrate = "Original audio"
       )
-    )
+    }
+
+    return qualities
   }
 
   suspend fun extractMedia(url: String): ExtractedMediaInfo = withContext(Dispatchers.IO) {
@@ -432,9 +418,9 @@ class SocialMediaExtractor {
           streamUrl = cleanJsonUrl(streamUrl)
           if (!streamUrl.isNullOrBlank() && streamUrl.startsWith("http")) {
             val title = extractTitleTag(html) ?: "Facebook Video"
-            val qualities = listOf(
-              VideoQualityOption("720p HD", "HD", "MP4", MediaType.VIDEO, "25 MB", streamUrl, "2500 kbps", true),
-              VideoQualityOption("MP3 Audio", "320 kbps", "MP3", MediaType.AUDIO, "4 MB", streamUrl, "320 kbps")
+            val qualities = buildMultiResolutionQualities(
+              hdStream = streamUrl,
+              platform = "Facebook"
             )
             return ExtractedMediaInfo(
               originalUrl = url,
@@ -477,9 +463,9 @@ class SocialMediaExtractor {
           if (matcher.find()) {
             val stream = cleanJsonUrl(matcher.group(1))
             if (!stream.isNullOrBlank() && stream.startsWith("http")) {
-              val qualities = listOf(
-                VideoQualityOption("1080p / 720p HD", "HD", "MP4", MediaType.VIDEO, "35 MB", stream, "3500 kbps", true),
-                VideoQualityOption("MP3 Audio", "320 kbps", "MP3", MediaType.AUDIO, "4.2 MB", stream, "320 kbps")
+              val qualities = buildMultiResolutionQualities(
+                hdStream = stream,
+                platform = "Facebook"
               )
               return ExtractedMediaInfo(
                 originalUrl = url,
@@ -739,12 +725,25 @@ class SocialMediaExtractor {
   private fun buildDirectVideoInfo(url: String, platform: String): ExtractedMediaInfo {
     val fileName = url.substringAfterLast("/").substringBefore("?").ifEmpty { "Direct Video Stream" }
     val isAudio = fileName.lowercase().endsWith(".mp3")
-    val qualities = buildMultiResolutionQualities(
-      hdStream = url,
-      sdStream = url,
-      audioStream = url,
-      platform = platform
-    )
+    val qualities = if (isAudio) {
+      listOf(
+        VideoQualityOption(
+          label = "Available audio",
+          resolution = "Audio",
+          format = "MP3",
+          mediaType = MediaType.AUDIO,
+          estimatedSize = "Size varies",
+          downloadUrl = url,
+          bitrate = "Original audio",
+          isVipBest = true
+        )
+      )
+    } else {
+      buildMultiResolutionQualities(
+        hdStream = url,
+        platform = platform
+      )
+    }
     return ExtractedMediaInfo(
       originalUrl = url,
       title = fileName,

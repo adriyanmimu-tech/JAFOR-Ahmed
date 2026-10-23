@@ -41,7 +41,6 @@ import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Hd
-import androidx.compose.material.icons.filled.HighQuality
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Movie
@@ -665,7 +664,7 @@ fun HomeScreen(
                   .padding(horizontal = 8.dp, vertical = 3.dp)
               ) {
                 Text(
-                  text = "4K Turbo Downloader",
+                  text = "Smart Video Downloader",
                   fontSize = 10.sp,
                   color = Color(0xFF10B981),
                   fontWeight = FontWeight.Bold
@@ -741,7 +740,7 @@ fun HomeScreen(
               modifier = Modifier.fillMaxWidth(),
               horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-              listOf("✓ 4K 60FPS", "✓ Watermark-Free", "✓ Lossless MP3", "✓ Auto FYP").forEach { feature ->
+              listOf("✓ Best available quality", "✓ Manual quality choice", "✓ Audio options", "✓ FYP toggle").forEach { feature ->
                 Box(
                   modifier = Modifier
                     .clip(RoundedCornerShape(20.dp))
@@ -840,7 +839,7 @@ fun HomeScreen(
                   )
                   Spacer(modifier = Modifier.width(10.dp))
                   Text(
-                    text = "Analyzing Highest 4K Stream...",
+                    text = "Finding available video quality...",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
@@ -942,7 +941,7 @@ fun HomeScreen(
                     .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
                   Text(
-                    text = "${media.duration} • 4K MAX",
+                    text = media.duration,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF34D399)
@@ -1064,7 +1063,7 @@ fun HomeScreen(
                   color = if (isDark) Color.White else Color(0xFF0F172A)
                 )
                 Text(
-                  text = "Lossless 4K Max",
+                  text = "Best available quality",
                   fontSize = 11.sp,
                   fontWeight = FontWeight.Bold,
                   color = Color(0xFF10B981)
@@ -1078,7 +1077,7 @@ fun HomeScreen(
                 media.qualities.forEach { quality ->
                   val isSelected = selectedQuality == quality
                   val isAudio = quality.mediaType == MediaType.AUDIO
-                  val isHighest = quality.isVipBest || quality.resolution.contains("4K")
+                  val isRecommended = quality.isVipBest
 
                   PremiumGlassCard(
                     isDark = isDark,
@@ -1128,7 +1127,7 @@ fun HomeScreen(
                               fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                               color = if (isSelected) Color(0xFF10B981) else (if (isDark) Color.White else Color(0xFF0F172A))
                             )
-                            if (isHighest) {
+                            if (isRecommended) {
                               Spacer(modifier = Modifier.width(6.dp))
                               Box(
                                 modifier = Modifier
@@ -1136,7 +1135,7 @@ fun HomeScreen(
                                   .padding(horizontal = 5.dp, vertical = 1.5.dp)
                               ) {
                                 Text(
-                                  text = "HIGHEST 4K",
+                                  text = "BEST AVAILABLE",
                                   fontSize = 8.sp,
                                   fontWeight = FontWeight.Black,
                                   color = Color.Black
@@ -1192,7 +1191,7 @@ fun HomeScreen(
 
               // Direct Download Button (3D Embossed Emerald Glass Button)
               val curOpt = selectedQuality
-              val currentQualityLabel = curOpt?.resolution?.ifEmpty { curOpt.label } ?: "4K"
+              val currentQualityLabel = curOpt?.resolution?.ifEmpty { curOpt.label } ?: "Choose quality"
               val currentFormat = curOpt?.format?.uppercase() ?: "MP4"
 
               Box(

@@ -152,7 +152,15 @@ class DownloaderViewModel(application: Application) : AndroidViewModel(applicati
       try {
         val media = extractor.extractMedia(targetUrl)
         _extractedMedia.value = media
-        _selectedQuality.value = media.qualities.firstOrNull { it.isVipBest } ?: media.qualities.firstOrNull()
+        val availableQualities = media.qualities.filter {
+          it.downloadUrl.startsWith("http://", ignoreCase = true) ||
+            it.downloadUrl.startsWith("https://", ignoreCase = true)
+        }
+        _selectedQuality.value = availableQualities.firstOrNull {
+          it.mediaType == com.example.data.model.MediaType.VIDEO && it.isVipBest
+        } ?: availableQualities.firstOrNull {
+          it.mediaType == com.example.data.model.MediaType.VIDEO
+        } ?: availableQualities.firstOrNull()
         if (media.platform.equals("TikTok", ignoreCase = true)) {
           _isAntiCopyrightEnabled.value = true
         }
@@ -179,8 +187,8 @@ class DownloaderViewModel(application: Application) : AndroidViewModel(applicati
 
     viewModelScope.launch {
       val isTikTok = media.platform.equals("TikTok", ignoreCase = true)
-      val shouldShield = _isAntiCopyrightEnabled.value || isTikTok
-      val finalTitle = if (isTikTok && !media.title.contains("FYP")) {
+      val shouldShield = _isAntiCopyrightEnabled.value
+      val finalTitle = if (shouldShield && isTikTok && !media.title.contains("FYP")) {
         "${media.title} [FYP 4x Rules]"
       } else {
         media.title
@@ -199,7 +207,7 @@ class DownloaderViewModel(application: Application) : AndroidViewModel(applicati
         duration = media.duration,
         isShielded = shouldShield,
         status = DownloadStatus.DOWNLOADING,
-        speedText = if (isTikTok) "Applying 4 Golden Rules..." else "Starting..."
+        speedText = if (shouldShield) "Applying optional shield..." else "Starting..."
       )
 
       downloadEngine.startDownload(newItem)

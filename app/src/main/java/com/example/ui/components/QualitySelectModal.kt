@@ -13,6 +13,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,7 +33,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Hd
-import androidx.compose.material.icons.filled.HighQuality
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.PlayArrow
@@ -95,6 +96,16 @@ fun QualitySelectModal(
   val context = LocalContext.current
   val coroutineScope = rememberCoroutineScope()
   var isCaptionCopied by remember { mutableStateOf(false) }
+  val availableQualities = remember(mediaInfo.qualities) {
+    mediaInfo.qualities
+      .filter { it.downloadUrl.startsWith("http", ignoreCase = true) }
+      .distinctBy { it.mediaType to it.downloadUrl }
+  }
+  val recommendedQuality = availableQualities.firstOrNull {
+    it.mediaType == MediaType.VIDEO && it.isVipBest
+  } ?: availableQualities.firstOrNull {
+    it.mediaType == MediaType.VIDEO
+  } ?: availableQualities.firstOrNull()
 
   Dialog(
     onDismissRequest = onDismiss,
@@ -103,6 +114,7 @@ fun QualitySelectModal(
     Surface(
       modifier = Modifier
         .fillMaxWidth(0.95f)
+        .fillMaxHeight(0.92f)
         .clip(RoundedCornerShape(26.dp))
         .border(
           width = 1.4.dp,
@@ -116,8 +128,8 @@ fun QualitySelectModal(
     ) {
       Column(
         modifier = Modifier
-          .fillMaxWidth()
-          .padding(18.dp)
+          .fillMaxSize()
+          .padding(16.dp)
       ) {
         // Modal Header
         Row(
@@ -142,29 +154,16 @@ fun QualitySelectModal(
             }
             Spacer(modifier = Modifier.width(10.dp))
             Column {
-              Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                  text = "Media Details & Quality",
-                  fontSize = 16.sp,
-                  fontWeight = FontWeight.Bold,
-                  color = if (isDark) Color.White else Color(0xFF0F172A)
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Box(
-                  modifier = Modifier
-                    .background(Color(0xFF10B981), RoundedCornerShape(6.dp))
-                    .padding(horizontal = 6.dp, vertical = 2.dp)
-                ) {
-                  Text(
-                    text = "SNAPVID PRO",
-                    fontSize = 9.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = Color.Black
-                  )
-                }
-              }
               Text(
-                text = "Source: ${mediaInfo.platform} • 4K Turbo Inspector",
+                text = "Media Details & Quality",
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+                color = if (isDark) Color.White else Color(0xFF0F172A),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+              )
+              Text(
+                text = "Source: ${mediaInfo.platform}",
                 fontSize = 11.sp,
                 color = Color(0xFF34D399),
                 fontWeight = FontWeight.Medium
@@ -185,52 +184,6 @@ fun QualitySelectModal(
         }
 
         Spacer(modifier = Modifier.height(10.dp))
-
-        // Highest Available Quality Banner
-        Box(
-          modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color(0x2810B981))
-            .border(1.dp, Color(0x5034D399), RoundedCornerShape(12.dp))
-            .padding(horizontal = 12.dp, vertical = 8.dp)
-        ) {
-          Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-          ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-              Icon(
-                imageVector = Icons.Default.HighQuality,
-                contentDescription = "4K Max",
-                tint = Color(0xFF10B981),
-                modifier = Modifier.size(18.dp)
-              )
-              Spacer(modifier = Modifier.width(8.dp))
-              Text(
-                text = "Highest Quality: 4K 2160p (60 FPS)",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                color = if (isDark) Color.White else Color(0xFF0F172A)
-              )
-            }
-            Box(
-              modifier = Modifier
-                .background(Color(0xFF10B981), RoundedCornerShape(4.dp))
-                .padding(horizontal = 6.dp, vertical = 2.dp)
-            ) {
-              Text(
-                text = "MAX 4K",
-                fontSize = 9.sp,
-                fontWeight = FontWeight.Black,
-                color = Color.Black
-              )
-            }
-          }
-        }
-
-        Spacer(modifier = Modifier.height(14.dp))
 
         // DEDICATED TITLE & CAPTION BOX WITH 1-TAP COPY (PREMIUM SCREEN CARD)
         PremiumGlassCard(
@@ -392,7 +345,7 @@ fun QualitySelectModal(
             color = if (isDark) Color.White else Color(0xFF0F172A)
           )
           Text(
-            text = "Tap to choose",
+            text = if (selectedQuality?.isVipBest == true) "Best available selected" else "Choose below",
             fontSize = 11.sp,
             color = Color(0xFF10B981),
             fontWeight = FontWeight.SemiBold
@@ -405,19 +358,33 @@ fun QualitySelectModal(
         LazyColumn(
           modifier = Modifier
             .fillMaxWidth()
-            .weight(1f, fill = false),
+            .weight(1f, fill = true),
           verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-          items(mediaInfo.qualities.size) { index ->
-            val quality = mediaInfo.qualities[index]
-            val isSelected = selectedQuality == quality
+          if (availableQualities.isEmpty()) {
+            item {
+              Text(
+                text = "No downloadable quality was found for this link.",
+                fontSize = 12.sp,
+                color = if (isDark) Color(0xFFA5ABB8) else Color(0xFF6B7280),
+                modifier = Modifier
+                  .fillMaxWidth()
+                  .padding(vertical = 12.dp)
+              )
+            }
+          } else {
+            items(availableQualities.size) { index ->
+              val quality = availableQualities[index]
+              val isSelected = selectedQuality == quality
 
-            ModernQualityCard(
-              quality = quality,
-              isSelected = isSelected,
-              isDark = isDark,
-              onClick = { onQualitySelected(quality) }
-            )
+              ModernQualityCard(
+                quality = quality,
+                isSelected = isSelected,
+                isRecommended = quality == recommendedQuality,
+                isDark = isDark,
+                onClick = { onQualitySelected(quality) }
+              )
+            }
           }
         }
 
@@ -434,7 +401,7 @@ fun QualitySelectModal(
           Row(
             modifier = Modifier
               .fillMaxWidth()
-              .padding(horizontal = 14.dp, vertical = 10.dp),
+              .padding(horizontal = 10.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
           ) {
@@ -444,7 +411,7 @@ fun QualitySelectModal(
             ) {
               Box(
                 modifier = Modifier
-                  .size(32.dp)
+                  .size(28.dp)
                   .clip(CircleShape)
                   .background(if (isAntiCopyrightEnabled) Color(0x3510B981) else Color(0x22888888)),
                 contentAlignment = Alignment.Center
@@ -457,18 +424,21 @@ fun QualitySelectModal(
                 )
               }
               Spacer(modifier = Modifier.width(10.dp))
-              Column {
+              Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                   Text(
-                    text = "FYP & Anti-Copyright 4x Shield",
-                    fontSize = 12.sp,
+                    text = "FYP & Anti-Copyright Shield",
+                    fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    color = if (isAntiCopyrightEnabled) Color(0xFF10B981) else MaterialTheme.colorScheme.onBackground
+                    color = if (isAntiCopyrightEnabled) Color(0xFF10B981) else MaterialTheme.colorScheme.onBackground,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false)
                   )
                   Spacer(modifier = Modifier.width(6.dp))
                   Text(
-                    text = "4 FYP Rules",
-                    fontSize = 10.sp,
+                    text = "Tips",
+                    fontSize = 9.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF10B981),
                     modifier = Modifier
@@ -478,10 +448,11 @@ fun QualitySelectModal(
                   )
                 }
                 Text(
-                  text = "Unique file hash & anti-copyright protection",
-                  fontSize = 10.sp,
+                  text = "Optional • Toggle on or off",
+                  fontSize = 9.sp,
                   color = if (isDark) Color(0xFFA5ABB8) else Color(0xFF6B7280),
-                  lineHeight = 13.sp
+                  maxLines = 1,
+                  overflow = TextOverflow.Ellipsis
                 )
               }
             }
@@ -502,7 +473,8 @@ fun QualitySelectModal(
         Spacer(modifier = Modifier.height(14.dp))
 
         // Main Confirm Download Button (3D Embossed Emerald Glass Button)
-        val currentQualityLabel = selectedQuality?.resolution?.ifEmpty { selectedQuality.label } ?: "HD"
+        val currentQuality = selectedQuality?.takeIf { it.downloadUrl.startsWith("http", ignoreCase = true) }
+        val currentQualityLabel = currentQuality?.resolution?.ifEmpty { currentQuality.label } ?: "Choose quality"
         val currentFormat = selectedQuality?.format?.uppercase() ?: "MP4"
         val currentSize = selectedQuality?.estimatedSize?.let { " • $it" } ?: ""
 
@@ -523,7 +495,7 @@ fun QualitySelectModal(
               ),
               shape = RoundedCornerShape(16.dp)
             )
-            .clickable(enabled = selectedQuality != null, onClick = onConfirmDownload)
+            .clickable(enabled = currentQuality != null, onClick = onConfirmDownload)
             .testTag("confirm_download_button"),
           contentAlignment = Alignment.Center
         ) {
@@ -539,7 +511,7 @@ fun QualitySelectModal(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-              text = "Start Download ($currentQualityLabel • $currentFormat$currentSize)",
+              text = if (currentQuality != null) "Download • $currentQualityLabel • $currentFormat$currentSize" else "No quality available",
               fontSize = 14.sp,
               fontWeight = FontWeight.Bold,
               color = Color.Black
@@ -555,11 +527,11 @@ fun QualitySelectModal(
 private fun ModernQualityCard(
   quality: VideoQualityOption,
   isSelected: Boolean,
+  isRecommended: Boolean,
   isDark: Boolean,
   onClick: () -> Unit
 ) {
   val isAudio = quality.mediaType == MediaType.AUDIO
-  val isHighest = quality.isVipBest || quality.resolution.contains("4K")
 
   PremiumGlassCard(
     isDark = isDark,
@@ -611,7 +583,7 @@ private fun ModernQualityCard(
               fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
               color = if (isSelected) Color(0xFF10B981) else (if (isDark) Color.White else Color(0xFF0F172A))
             )
-            if (isHighest) {
+            if (isRecommended) {
               Spacer(modifier = Modifier.width(6.dp))
               Box(
                 modifier = Modifier
@@ -619,7 +591,7 @@ private fun ModernQualityCard(
                   .padding(horizontal = 5.dp, vertical = 1.5.dp)
               ) {
                 Text(
-                  text = "HIGHEST 4K",
+                  text = "BEST AVAILABLE",
                   fontSize = 8.sp,
                   fontWeight = FontWeight.Black,
                   color = Color.Black
