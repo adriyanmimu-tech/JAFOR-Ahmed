@@ -181,10 +181,12 @@ fun QualitySelectModal(
     onDismissRequest = onDismiss,
     properties = DialogProperties(usePlatformDefaultWidth = false)
   ) {
+    val effectiveQuality = selectedQuality ?: recommendedQuality
+
     Surface(
       modifier = Modifier
         .fillMaxWidth(0.95f)
-        .fillMaxHeight(0.92f)
+        .fillMaxHeight(0.90f)
         .clip(RoundedCornerShape(26.dp))
         .border(
           width = 1.4.dp,
@@ -201,25 +203,28 @@ fun QualitySelectModal(
           .fillMaxSize()
           .padding(16.dp)
       ) {
-        // Modal Header matching Screenshot
+        // 1. Clean Modal Header (SNAPVID PRO badge removed as requested)
         Row(
           modifier = Modifier.fillMaxWidth(),
           horizontalArrangement = Arrangement.SpaceBetween,
           verticalAlignment = Alignment.CenterVertically
         ) {
-          Row(verticalAlignment = Alignment.CenterVertically) {
+          Row(
+            modifier = Modifier.weight(1f),
+            verticalAlignment = Alignment.CenterVertically
+          ) {
             Box(
               modifier = Modifier
-                .size(38.dp)
+                .size(36.dp)
                 .clip(CircleShape)
                 .background(Brush.linearGradient(listOf(Color(0xFF10B981), Color(0xFF34D399)))),
               contentAlignment = Alignment.Center
             ) {
               Icon(
                 imageVector = Icons.Default.Download,
-                contentDescription = "SnapVid Downloader",
+                contentDescription = "Download",
                 tint = Color.Black,
-                modifier = Modifier.size(22.dp)
+                modifier = Modifier.size(20.dp)
               )
             }
             Spacer(modifier = Modifier.width(10.dp))
@@ -233,7 +238,7 @@ fun QualitySelectModal(
                 overflow = TextOverflow.Ellipsis
               )
               Text(
-                text = "Source: ${mediaInfo.platform} • 4K Turbo Inspector",
+                text = "Source: ${mediaInfo.platform} • Ready to Download",
                 fontSize = 11.sp,
                 color = Color(0xFF34D399),
                 fontWeight = FontWeight.Medium
@@ -241,119 +246,25 @@ fun QualitySelectModal(
             }
           }
 
-          Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-              modifier = Modifier
-                .clip(RoundedCornerShape(8.dp))
-                .background(
-                  Brush.linearGradient(
-                    listOf(Color(0x3510B981), Color(0x25F59E0B))
-                  )
-                )
-                .border(0.8.dp, Color(0xFF34D399), RoundedCornerShape(8.dp))
-                .padding(horizontal = 7.dp, vertical = 3.dp)
-            ) {
-              Text(
-                text = "SNAPVID PRO",
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Black,
-                color = Color(0xFF34D399)
-              )
-            }
-
-            Spacer(modifier = Modifier.width(4.dp))
-
-            IconButton(
-              onClick = onDismiss,
-              modifier = Modifier.testTag("close_quality_modal")
-            ) {
-              Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription = "Close",
-                tint = if (isDark) Color.White.copy(alpha = 0.7f) else Color.Black.copy(alpha = 0.6f)
-              )
-            }
-          }
-        }
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        // TOP PROMINENT HIGHEST QUALITY BANNER
-        Box(
-          modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
-            .background(
-              Brush.horizontalGradient(
-                listOf(Color(0x2510B981), Color(0x1834D399), Color(0x0C059669))
-              )
-            )
-            .border(
-              width = 1.dp,
-              brush = Brush.horizontalGradient(listOf(Color(0x7010B981), Color(0x3034D399))),
-              shape = RoundedCornerShape(14.dp)
-            )
-            .padding(horizontal = 12.dp, vertical = 8.dp)
-        ) {
-          Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+          IconButton(
+            onClick = onDismiss,
+            modifier = Modifier.testTag("close_quality_modal")
           ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-              Box(
-                modifier = Modifier
-                  .size(28.dp)
-                  .clip(CircleShape)
-                  .background(Color(0x3510B981)),
-                contentAlignment = Alignment.Center
-              ) {
-                Icon(
-                  imageVector = Icons.Default.Hd,
-                  contentDescription = "HD",
-                  tint = Color(0xFF10B981),
-                  modifier = Modifier.size(16.dp)
-                )
-              }
-              Spacer(modifier = Modifier.width(8.dp))
-              Column {
-                Text(
-                  text = "Highest Quality: 1080p Full HD (60 FPS)",
-                  fontSize = 12.sp,
-                  fontWeight = FontWeight.Bold,
-                  color = if (isDark) Color.White else Color(0xFF0F172A)
-                )
-                Text(
-                  text = "Original pure master • Uncompressed audio",
-                  fontSize = 10.sp,
-                  color = Color(0xFF34D399)
-                )
-              }
-            }
-
-            Box(
-              modifier = Modifier
-                .clip(RoundedCornerShape(6.dp))
-                .background(Color(0xFF10B981))
-                .padding(horizontal = 7.dp, vertical = 3.dp)
-            ) {
-              Text(
-                text = "MAX HD",
-                fontSize = 9.sp,
-                fontWeight = FontWeight.Black,
-                color = Color.Black
-              )
-            }
+            Icon(
+              imageVector = Icons.Default.Close,
+              contentDescription = "Close",
+              tint = if (isDark) Color.White.copy(alpha = 0.7f) else Color.Black.copy(alpha = 0.6f)
+            )
           }
         }
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // DEDICATED TITLE & CAPTION BOX WITH 1-TAP COPY (PREMIUM SCREEN CARD)
+        // 2. Media Preview Card
         PremiumGlassCard(
           isDark = isDark,
           modifier = Modifier.fillMaxWidth(),
-          shape = RoundedCornerShape(18.dp),
+          shape = RoundedCornerShape(16.dp),
           borderWidth = 1.2.dp
         ) {
           Column(
@@ -361,15 +272,14 @@ fun QualitySelectModal(
               .fillMaxWidth()
               .padding(12.dp)
           ) {
-            // Media Preview Row
             Row(
               modifier = Modifier.fillMaxWidth(),
               verticalAlignment = Alignment.CenterVertically
             ) {
               Box(
                 modifier = Modifier
-                  .size(width = 80.dp, height = 68.dp)
-                  .clip(RoundedCornerShape(12.dp))
+                  .size(width = 72.dp, height = 62.dp)
+                  .clip(RoundedCornerShape(10.dp))
                   .background(Color(0xFF1E2338))
               ) {
                 AsyncImage(
@@ -378,10 +288,9 @@ fun QualitySelectModal(
                   modifier = Modifier.fillMaxSize(),
                   contentScale = ContentScale.Crop
                 )
-                // Center Play Icon Overlay
                 Box(
                   modifier = Modifier
-                    .size(24.dp)
+                    .size(22.dp)
                     .clip(CircleShape)
                     .background(Color.Black.copy(alpha = 0.65f))
                     .align(Alignment.Center),
@@ -391,10 +300,9 @@ fun QualitySelectModal(
                     imageVector = Icons.Default.PlayArrow,
                     contentDescription = "Play",
                     tint = Color(0xFF10B981),
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(14.dp)
                   )
                 }
-                // Duration Overlay
                 Box(
                   modifier = Modifier
                     .align(Alignment.BottomStart)
@@ -413,7 +321,6 @@ fun QualitySelectModal(
 
               Spacer(modifier = Modifier.width(10.dp))
 
-              // Creator and Platform Pills
               Column(modifier = Modifier.weight(1f)) {
                 Row(
                   modifier = Modifier.fillMaxWidth(),
@@ -434,31 +341,17 @@ fun QualitySelectModal(
                         text = mediaInfo.author,
                         fontSize = 11.sp,
                         color = VipElectricCyan,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                       )
                     }
-                  }
-
-                  Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                      imageVector = Icons.Default.CheckCircle,
-                      contentDescription = null,
-                      tint = Color(0xFF10B981),
-                      modifier = Modifier.size(13.dp)
-                    )
-                    Spacer(modifier = Modifier.width(3.dp))
-                    Text(
-                      text = "Original Audio",
-                      fontSize = 10.sp,
-                      fontWeight = FontWeight.Bold,
-                      color = Color(0xFF10B981)
-                    )
                   }
                 }
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                   text = mediaInfo.title,
-                  fontSize = 12.sp,
+                  fontSize = 11.sp,
                   fontWeight = FontWeight.Medium,
                   maxLines = 2,
                   overflow = TextOverflow.Ellipsis,
@@ -469,14 +362,13 @@ fun QualitySelectModal(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Copy Title & Caption 1-Tap Action Button
             Button(
               onClick = {
                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                 val clip = ClipData.newPlainText("Video Caption", mediaInfo.title)
                 clipboard.setPrimaryClip(clip)
                 isCaptionCopied = true
-                Toast.makeText(context, "Video caption copied to clipboard! 📋", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Video caption copied! 📋", Toast.LENGTH_SHORT).show()
                 coroutineScope.launch {
                   delay(2500)
                   isCaptionCopied = false
@@ -487,12 +379,12 @@ fun QualitySelectModal(
                 contentColor = if (isCaptionCopied) Color.Black else Color(0xFF10B981)
               ),
               shape = RoundedCornerShape(10.dp),
-              modifier = Modifier.fillMaxWidth().height(36.dp)
+              modifier = Modifier.fillMaxWidth().height(34.dp)
             ) {
               Icon(
                 imageVector = if (isCaptionCopied) Icons.Default.CheckCircle else Icons.Default.ContentCopy,
                 contentDescription = "Copy Caption",
-                modifier = Modifier.size(15.dp)
+                modifier = Modifier.size(14.dp)
               )
               Spacer(modifier = Modifier.width(6.dp))
               Text(
@@ -506,7 +398,7 @@ fun QualitySelectModal(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // Select Quality Header (matching user reference screenshot)
+        // 3. Select Quality Header & Filter Tabs
         Row(
           modifier = Modifier.fillMaxWidth(),
           horizontalArrangement = Arrangement.SpaceBetween,
@@ -528,15 +420,14 @@ fun QualitySelectModal(
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // Category Filter Chips
         Row(
           modifier = Modifier.fillMaxWidth(),
           horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
           listOf(
             "All (${availableQualities.size})" to 0,
-            "🎬 Video (HD/SD)" to 1,
-            "🎵 Audio (MP3)" to 2
+            "🎬 Video" to 1,
+            "🎵 Audio" to 2
           ).forEach { (label, tabIndex) ->
             val isTabActive = selectedFilterTab == tabIndex
             Box(
@@ -547,7 +438,7 @@ fun QualitySelectModal(
                   else (if (isDark) Color(0x28FFFFFF) else Color(0x18000000))
                 )
                 .clickable { selectedFilterTab = tabIndex }
-                .padding(horizontal = 10.dp, vertical = 6.dp)
+                .padding(horizontal = 10.dp, vertical = 5.dp)
             ) {
               Text(
                 text = label,
@@ -561,132 +452,79 @@ fun QualitySelectModal(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Quality Options List (Premium Screen Cards)
+        // 4. Quality Options List (Scrollable middle section)
         LazyColumn(
           modifier = Modifier
             .fillMaxWidth()
-            .weight(1f, fill = true),
-          verticalArrangement = Arrangement.spacedBy(8.dp)
+            .weight(1f),
+          verticalArrangement = Arrangement.spacedBy(7.dp)
         ) {
-          if (filteredQualities.isEmpty()) {
-            item {
-              Text(
-                text = "No quality options available for this category.",
-                fontSize = 12.sp,
-                color = if (isDark) Color(0xFFA5ABB8) else Color(0xFF6B7280),
-                modifier = Modifier
-                  .fillMaxWidth()
-                  .padding(vertical = 12.dp)
-              )
-            }
-          } else {
-            items(filteredQualities.size) { index ->
-              val quality = filteredQualities[index]
-              val isSelected = selectedQuality == quality
+          items(filteredQualities.size) { index ->
+            val quality = filteredQualities[index]
+            val isSelected = (selectedQuality == quality) || (selectedQuality == null && quality == effectiveQuality)
 
-              ModernQualityCard(
-                quality = quality,
-                isSelected = isSelected,
-                isRecommended = quality == recommendedQuality,
-                isDark = isDark,
-                onClick = { onQualitySelected(quality) }
-              )
-            }
-          }
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // VIP Anti-Copyright & FYP Shield Toggle (Premium Screen Card)
-        PremiumGlassCard(
-          isDark = isDark,
-          isSelected = isAntiCopyrightEnabled,
-          shape = RoundedCornerShape(16.dp),
-          borderWidth = if (isAntiCopyrightEnabled) 1.5.dp else 1.dp,
-          modifier = Modifier.fillMaxWidth()
-        ) {
-          Row(
-            modifier = Modifier
-              .fillMaxWidth()
-              .padding(horizontal = 10.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-          ) {
-            Row(
-              verticalAlignment = Alignment.CenterVertically,
-              modifier = Modifier.weight(1f)
-            ) {
-              Box(
-                modifier = Modifier
-                  .size(28.dp)
-                  .clip(CircleShape)
-                  .background(if (isAntiCopyrightEnabled) Color(0x3510B981) else Color(0x22888888)),
-                contentAlignment = Alignment.Center
-              ) {
-                Icon(
-                  imageVector = Icons.Default.Lock,
-                  contentDescription = "Anti-Copyright",
-                  tint = if (isAntiCopyrightEnabled) Color(0xFF10B981) else Color.Gray,
-                  modifier = Modifier.size(16.dp)
-                )
-              }
-              Spacer(modifier = Modifier.width(10.dp))
-              Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                  Text(
-                    text = "FYP & Anti-Copyright Shield",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = if (isAntiCopyrightEnabled) Color(0xFF10B981) else MaterialTheme.colorScheme.onBackground,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f, fill = false)
-                  )
-                  Spacer(modifier = Modifier.width(6.dp))
-                  Text(
-                    text = "Tips",
-                    fontSize = 9.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF10B981),
-                    modifier = Modifier
-                      .background(Color(0x3010B981), RoundedCornerShape(4.dp))
-                      .clickable { onShowFypTips() }
-                      .padding(horizontal = 5.dp, vertical = 1.dp)
-                  )
-                }
-                Text(
-                  text = "Optional • Toggle on or off",
-                  fontSize = 9.sp,
-                  color = if (isDark) Color(0xFFA5ABB8) else Color(0xFF6B7280),
-                  maxLines = 1,
-                  overflow = TextOverflow.Ellipsis
-                )
-              }
-            }
-
-            Switch(
-              checked = isAntiCopyrightEnabled,
-              onCheckedChange = onToggleAntiCopyright,
-              colors = SwitchDefaults.colors(
-                checkedThumbColor = Color.Black,
-                checkedTrackColor = Color(0xFF10B981),
-                uncheckedThumbColor = Color.LightGray,
-                uncheckedTrackColor = Color.DarkGray
-              )
+            ModernQualityCard(
+              quality = quality,
+              isSelected = isSelected,
+              isRecommended = quality == recommendedQuality,
+              isDark = isDark,
+              onClick = { onQualitySelected(quality) }
             )
           }
         }
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
-        // Main Confirm Download Button (3D Embossed Emerald Glass Button)
-        val currentQuality = selectedQuality?.takeIf { it.downloadUrl.startsWith("http", ignoreCase = true) }
-        val downloadButtonText = currentQuality?.let { "Download ${it.format.uppercase()}" } ?: "No quality available"
+        // 5. Compact FYP & Anti-Copyright Toggle (Single line enable/disable switch, no big box!)
+        Row(
+          modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(if (isAntiCopyrightEnabled) Color(0x2510B981) else (if (isDark) Color(0x18FFFFFF) else Color(0x10000000)))
+            .padding(horizontal = 12.dp, vertical = 4.dp),
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+              imageVector = Icons.Default.Lock,
+              contentDescription = "Shield",
+              tint = if (isAntiCopyrightEnabled) Color(0xFF10B981) else Color.Gray,
+              modifier = Modifier.size(16.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+              text = "FYP & Anti-Copyright Shield",
+              fontSize = 12.sp,
+              fontWeight = FontWeight.SemiBold,
+              color = if (isAntiCopyrightEnabled) Color(0xFF10B981) else (if (isDark) Color.White else Color(0xFF0F172A))
+            )
+          }
+
+          Switch(
+            checked = isAntiCopyrightEnabled,
+            onCheckedChange = onToggleAntiCopyright,
+            colors = SwitchDefaults.colors(
+              checkedThumbColor = Color.Black,
+              checkedTrackColor = Color(0xFF10B981),
+              uncheckedThumbColor = Color.LightGray,
+              uncheckedTrackColor = Color.DarkGray
+            )
+          )
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // 6. Prominent Anchored Download Button (Always visible at the bottom!)
+        val downloadTarget = effectiveQuality ?: recommendedQuality
+        val buttonLabel = downloadTarget?.let {
+          "Download ${it.format.uppercase()} (${it.resolution})"
+        } ?: "Download Video"
 
         Box(
           modifier = Modifier
             .fillMaxWidth()
-            .height(52.dp)
+            .height(50.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(
               Brush.horizontalGradient(
@@ -700,7 +538,12 @@ fun QualitySelectModal(
               ),
               shape = RoundedCornerShape(16.dp)
             )
-            .clickable(enabled = currentQuality != null, onClick = onConfirmDownload)
+            .clickable(onClick = {
+              if (selectedQuality == null && downloadTarget != null) {
+                onQualitySelected(downloadTarget)
+              }
+              onConfirmDownload()
+            })
             .testTag("confirm_download_button"),
           contentAlignment = Alignment.Center
         ) {
@@ -716,10 +559,10 @@ fun QualitySelectModal(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-              text = downloadButtonText,
+              text = buttonLabel,
               maxLines = 1,
               overflow = TextOverflow.Ellipsis,
-              fontSize = 14.sp,
+              fontSize = 15.sp,
               fontWeight = FontWeight.Bold,
               color = Color.Black
             )
