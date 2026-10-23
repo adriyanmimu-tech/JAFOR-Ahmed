@@ -8,23 +8,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 private val DarkColorScheme = darkColorScheme(
-  primary = VipAmberPrimary,
-  onPrimary = Color(0xFF1F1200),
-  primaryContainer = Color(0xFF4A3400),
-  onPrimaryContainer = Color(0xFFFFE082),
-  secondary = VipCoral,
-  onSecondary = Color.White,
-  secondaryContainer = Color(0xFF4E1D0C),
-  onSecondaryContainer = Color(0xFFFFCCBC),
-  tertiary = VipGoldAccent,
-  onTertiary = Color(0xFF261900),
+  primary = VipEmeraldPrimary,
+  onPrimary = Color.Black,
+  primaryContainer = Color(0xFF064E3B),
+  onPrimaryContainer = Color(0xFFA7F3D0),
+  secondary = VipMintAccent,
+  onSecondary = Color.Black,
+  secondaryContainer = Color(0xFF047857),
+  onSecondaryContainer = Color(0xFFD1FAE5),
+  tertiary = VipElectricCyan,
+  onTertiary = Color.Black,
   background = VipObsidianBg,
   onBackground = TextPrimaryDark,
   surface = VipObsidianSurface,
   onSurface = TextPrimaryDark,
   surfaceVariant = VipObsidianSurfaceVariant,
   onSurfaceVariant = TextSecondaryDark,
-  outline = Color(0xFF3B4055),
+  outline = Color(0xFF264A3D),
   outlineVariant = VipCardBorderDark
 )
 

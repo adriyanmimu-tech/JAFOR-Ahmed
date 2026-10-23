@@ -46,9 +46,9 @@ fun GlassCard(
   } else if (isDark) {
     Brush.linearGradient(
       colors = listOf(
-        Color(0x331C2638), // Translucent frosty navy-slate
-        Color(0x1F0D1524),
-        Color(0x2E162032)
+        Color(0x3817352A), // Frosted translucent emerald glass
+        Color(0x220B1F17),
+        Color(0x301B3E31)
       ),
       start = Offset(0f, 0f),
       end = Offset(600f, 800f)
@@ -67,10 +67,10 @@ fun GlassCard(
   val defaultBorderBrush = if (isDark) {
     Brush.linearGradient(
       colors = listOf(
-        Color(0x99FFFFFF), // Top-left specular highlight
-        Color(0x18FFFFFF),
-        Color(0x4500F2FE), // Soft cyan glass refraction
-        Color(0x15FFFFFF)
+        Color(0xCCFFFFFF), // Top-left specular highlight
+        Color(0x25FFFFFF),
+        Color(0x6034D399), // Soft mint green glass reflection
+        Color(0x20FFFFFF)
       ),
       start = Offset(0f, 0f),
       end = Offset(500f, 700f)

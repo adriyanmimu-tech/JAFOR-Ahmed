@@ -25,17 +25,17 @@ fun GlassmorphicBackground(
   val baseGradient = if (isDark) {
     Brush.verticalGradient(
       listOf(
-        Color(0xFF080C14), // Deep obsidian
-        Color(0xFF0D1322),
-        Color(0xFF060910)
+        Color(0xFF04100B), // Deep forest emerald obsidian
+        Color(0xFF0A2218),
+        Color(0xFF05120D)
       )
     )
   } else {
     Brush.verticalGradient(
       listOf(
-        Color(0xFF0284C7), // Sky blue backdrop inspired by Screenshot 2
-        Color(0xFF0EA5E9),
-        Color(0xFF38BDF8)
+        Color(0xFF064E3B),
+        Color(0xFF047857),
+        Color(0xFF10B981)
       )
     )
   }

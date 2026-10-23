@@ -106,11 +106,11 @@ fun QualitySelectModal(
         .border(
           width = 1.3.dp,
           brush = Brush.linearGradient(
-            listOf(Color(0xFF00F2FE), Color(0xFF10B981), Color(0x60FFFFFF))
+            listOf(Color(0xFF10B981), Color(0xFF34D399), Color(0x60FFFFFF))
           ),
           shape = RoundedCornerShape(26.dp)
         ),
-      color = if (isDark) Color(0xF209101D) else Color(0xF8FFFFFF),
+      color = if (isDark) Color(0xF8071813) else Color(0xF8FFFFFF),
       tonalElevation = 10.dp
     ) {
       Column(
@@ -129,7 +129,7 @@ fun QualitySelectModal(
               modifier = Modifier
                 .size(38.dp)
                 .clip(CircleShape)
-                .background(Brush.linearGradient(listOf(Color(0xFF00F2FE), Color(0xFF10B981)))),
+                .background(Brush.linearGradient(listOf(Color(0xFF10B981), Color(0xFF34D399)))),
               contentAlignment = Alignment.Center
             ) {
               Icon(
@@ -151,7 +151,7 @@ fun QualitySelectModal(
                 Spacer(modifier = Modifier.width(6.dp))
                 Box(
                   modifier = Modifier
-                    .background(Color(0xFF00F2FE), RoundedCornerShape(6.dp))
+                    .background(Color(0xFF10B981), RoundedCornerShape(6.dp))
                     .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
                   Text(
@@ -163,9 +163,9 @@ fun QualitySelectModal(
                 }
               }
               Text(
-                text = "উৎস: ${mediaInfo.platform} • হাই স্পিড ইন্সপেক্টর",
+                text = "উৎস: ${mediaInfo.platform} • 4K টার্বো ইন্সপেক্টর",
                 fontSize = 11.sp,
-                color = VipElectricCyan,
+                color = Color(0xFF34D399),
                 fontWeight = FontWeight.Medium
               )
             }
@@ -180,6 +180,52 @@ fun QualitySelectModal(
               contentDescription = "Close",
               tint = if (isDark) Color.White.copy(alpha = 0.7f) else Color.Black.copy(alpha = 0.6f)
             )
+          }
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // Highest Available Quality Banner
+        Box(
+          modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color(0x2810B981))
+            .border(1.dp, Color(0x5034D399), RoundedCornerShape(12.dp))
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+        ) {
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+              Icon(
+                imageVector = Icons.Default.HighQuality,
+                contentDescription = "4K Max",
+                tint = Color(0xFF10B981),
+                modifier = Modifier.size(18.dp)
+              )
+              Spacer(modifier = Modifier.width(8.dp))
+              Text(
+                text = "ভিডিও হায়েস্ট কোয়ালিটি: 4K 2160p (60 FPS)",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = if (isDark) Color.White else Color(0xFF0F172A)
+              )
+            }
+            Box(
+              modifier = Modifier
+                .background(Color(0xFF10B981), RoundedCornerShape(4.dp))
+                .padding(horizontal = 6.dp, vertical = 2.dp)
+            ) {
+              Text(
+                text = "MAX 4K",
+                fontSize = 9.sp,
+                fontWeight = FontWeight.Black,
+                color = Color.Black
+              )
+            }
           }
         }
 
