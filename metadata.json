@@ -1,6 +1,6 @@
 {
-  "name": "VidMax VIP",
-  "description": "VIP all social media video and audio downloader with glassmorphism UI, built-in player, browser, and instant link extraction.",
+  "name": "SnapVid",
+  "description": "SnapVid - VIP all social media video and audio downloader with 3D glassmorphism UI, built-in player, browser, and instant link extraction.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

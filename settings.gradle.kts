@@ -22,6 +22,6 @@ dependencyResolutionManagement {
   }
 }
 
-rootProject.name = "VidMax VIP"
+rootProject.name = "SnapVid"
 
 include(":app")

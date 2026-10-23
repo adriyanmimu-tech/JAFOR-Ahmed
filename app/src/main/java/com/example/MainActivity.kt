@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Folder
@@ -177,18 +178,54 @@ fun VipBottomNavigationBar(
   isDark: Boolean,
   onSelectTab: (Int) -> Unit
 ) {
-  val surfaceColor = if (isDark) Color(0xF0121420) else Color(0xF5FFFFFF)
-  val borderColor = if (isDark) VipCardBorderDark else VipCardBorderLight
+  val surfaceBrush = if (isDark) {
+    Brush.verticalGradient(
+      listOf(
+        Color(0x551E2B42),
+        Color(0x350F1A2D)
+      )
+    )
+  } else {
+    Brush.verticalGradient(
+      listOf(
+        Color(0xCCFFFFFF),
+        Color(0x99F0F4FA)
+      )
+    )
+  }
+
+  val borderBrush = Brush.horizontalGradient(
+    if (isDark) listOf(Color(0x99FFFFFF), Color(0x5000F2FE), Color(0x3010B981), Color(0x70FFFFFF))
+    else listOf(Color(0xE0FFFFFF), Color(0x6000F2FE), Color(0x90FFFFFF))
+  )
 
   Box(
     modifier = Modifier
       .fillMaxWidth()
       .navigationBarsPadding()
-      .padding(horizontal = 16.dp, vertical = 6.dp)
-      .clip(RoundedCornerShape(22.dp))
-      .background(surfaceColor)
-      .border(1.dp, borderColor, RoundedCornerShape(22.dp))
+      .padding(horizontal = 18.dp, vertical = 6.dp)
+      .clip(RoundedCornerShape(26.dp))
+      .background(surfaceBrush)
+      .border(1.3.dp, borderBrush, RoundedCornerShape(26.dp))
   ) {
+    // Top specular highlight line
+    Box(
+      modifier = Modifier
+        .fillMaxWidth()
+        .height(1.dp)
+        .background(
+          Brush.horizontalGradient(
+            listOf(
+              Color.Transparent,
+              Color(0x80FFFFFF),
+              Color(0x9900F2FE),
+              Color(0x80FFFFFF),
+              Color.Transparent
+            )
+          )
+        )
+    )
+
     NavigationBar(
       containerColor = Color.Transparent,
       tonalElevation = 0.dp,
@@ -210,15 +247,15 @@ fun VipBottomNavigationBar(
         },
         label = {
           Text(
-            text = "Downloader",
+            text = "ডাউনলোডার",
             fontSize = 11.sp,
-            fontWeight = if (activeTab == 0) FontWeight.Bold else FontWeight.Normal
+            fontWeight = if (activeTab == 0) FontWeight.Bold else FontWeight.Medium
           )
         },
         colors = NavigationBarItemDefaults.colors(
           selectedIconColor = Color.Black,
-          selectedTextColor = VipAmberPrimary,
-          indicatorColor = VipAmberPrimary,
+          selectedTextColor = Color(0xFF00F2FE),
+          indicatorColor = Color(0xFF00F2FE),
           unselectedIconColor = if (isDark) Color(0xFFA5ABB8) else Color(0xFF6B7280),
           unselectedTextColor = if (isDark) Color(0xFFA5ABB8) else Color(0xFF6B7280)
         )
@@ -237,15 +274,15 @@ fun VipBottomNavigationBar(
         },
         label = {
           Text(
-            text = "Browser",
+            text = "ব্রাউজার",
             fontSize = 11.sp,
-            fontWeight = if (activeTab == 1) FontWeight.Bold else FontWeight.Normal
+            fontWeight = if (activeTab == 1) FontWeight.Bold else FontWeight.Medium
           )
         },
         colors = NavigationBarItemDefaults.colors(
           selectedIconColor = Color.Black,
-          selectedTextColor = VipAmberPrimary,
-          indicatorColor = VipAmberPrimary,
+          selectedTextColor = Color(0xFF00F2FE),
+          indicatorColor = Color(0xFF00F2FE),
           unselectedIconColor = if (isDark) Color(0xFFA5ABB8) else Color(0xFF6B7280),
           unselectedTextColor = if (isDark) Color(0xFFA5ABB8) else Color(0xFF6B7280)
         )
@@ -259,8 +296,8 @@ fun VipBottomNavigationBar(
           BadgedBox(
             badge = {
               if (activeDownloadCount > 0) {
-                Badge(containerColor = VipAmberDark) {
-                  Text("$activeDownloadCount", color = Color.White, fontSize = 10.sp)
+                Badge(containerColor = Color(0xFF00F2FE)) {
+                  Text("$activeDownloadCount", color = Color.Black, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                 }
               }
             }
@@ -274,15 +311,15 @@ fun VipBottomNavigationBar(
         },
         label = {
           Text(
-            text = "Downloads",
+            text = "ডাউনলোডস",
             fontSize = 11.sp,
-            fontWeight = if (activeTab == 2) FontWeight.Bold else FontWeight.Normal
+            fontWeight = if (activeTab == 2) FontWeight.Bold else FontWeight.Medium
           )
         },
         colors = NavigationBarItemDefaults.colors(
           selectedIconColor = Color.Black,
-          selectedTextColor = VipAmberPrimary,
-          indicatorColor = VipAmberPrimary,
+          selectedTextColor = Color(0xFF00F2FE),
+          indicatorColor = Color(0xFF00F2FE),
           unselectedIconColor = if (isDark) Color(0xFFA5ABB8) else Color(0xFF6B7280),
           unselectedTextColor = if (isDark) Color(0xFFA5ABB8) else Color(0xFF6B7280)
         )
@@ -290,3 +327,4 @@ fun VipBottomNavigationBar(
     }
   }
 }
+

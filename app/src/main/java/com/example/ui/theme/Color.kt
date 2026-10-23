@@ -2,26 +2,31 @@ package com.example.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// VIP Luxury Color Tokens
+// VIP Luxury & Futuristic Color Tokens
 val VipAmberPrimary = Color(0xFFFFB300)
 val VipAmberDark = Color(0xFFFF8F00)
 val VipGoldAccent = Color(0xFFFFD54F)
-val VipCoral = Color(0xFFFF7043)
+val VipCoral = Color(0xFFFF5722)
+val VipElectricCyan = Color(0xFF00F2FE)
+val VipCyanAccent = Color(0xFF4FACFE)
+val VipCyberEmerald = Color(0xFF10B981)
 
-val VipObsidianBg = Color(0xFF0C0D14)
-val VipObsidianSurface = Color(0xFF141622)
-val VipObsidianSurfaceVariant = Color(0xFF1E2132)
-val VipCardBorderDark = Color(0x40FFB300)
+val VipObsidianBg = Color(0xFF080A12)
+val VipObsidianSurface = Color(0xFF101322)
+val VipObsidianSurfaceVariant = Color(0xFF171B30)
+val VipCardBorderDark = Color(0x38FFB300)
+val VipCardGlowBorder = Color(0x4D00F2FE)
 
-val VipLightBg = Color(0xFFFAF9F6)
+val VipLightBg = Color(0xFFF6F8FC)
 val VipLightSurface = Color(0xFFFFFFFF)
-val VipLightSurfaceVariant = Color(0xFFF3EFE9)
-val VipCardBorderLight = Color(0x33FF8F00)
+val VipLightSurfaceVariant = Color(0xFFEFF3FA)
+val VipCardBorderLight = Color(0x28000000)
 
-val TextPrimaryDark = Color(0xFFF5F5F7)
-val TextSecondaryDark = Color(0xFF9EA3B0)
-val TextPrimaryLight = Color(0xFF1C1D22)
-val TextSecondaryLight = Color(0xFF6B7280)
+val TextPrimaryDark = Color(0xFFFFFFFF)
+val TextSecondaryDark = Color(0xFFA0A6BA)
+val TextPrimaryLight = Color(0xFF0F172A)
+val TextSecondaryLight = Color(0xFF64748B)
 
-val GlassFrostDark = Color(0x1FFFFFFF)
-val GlassFrostLight = Color(0x66FFFFFF)
+val GlassFrostDark = Color(0x18FFFFFF)
+val GlassFrostLight = Color(0x70FFFFFF)
+

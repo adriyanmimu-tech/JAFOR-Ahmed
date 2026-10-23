@@ -77,6 +77,7 @@ import com.example.data.model.DownloadItem
 import com.example.data.model.DownloadStatus
 import com.example.data.model.MediaType
 import com.example.ui.components.GlassCard
+import com.example.ui.components.PlatformBrandIcon
 import com.example.ui.theme.VipAmberDark
 import com.example.ui.theme.VipAmberPrimary
 import com.example.ui.theme.VipCoral
@@ -156,52 +157,7 @@ fun DownloadsScreen(
       }
     }
 
-    Spacer(modifier = Modifier.height(10.dp))
-
-    // Gallery & File Manager Direct Sync Banner
-    GlassCard(
-      isDark = isDark,
-      borderColor = VipAmberPrimary.copy(alpha = 0.4f),
-      borderWidth = 1.dp,
-      shape = RoundedCornerShape(14.dp),
-      modifier = Modifier.fillMaxWidth()
-    ) {
-      Row(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(horizontal = 12.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically
-      ) {
-        Box(
-          modifier = Modifier
-            .size(34.dp)
-            .clip(CircleShape)
-            .background(VipAmberPrimary.copy(alpha = 0.2f)),
-          contentAlignment = Alignment.Center
-        ) {
-          Icon(
-            imageVector = Icons.Default.PhotoLibrary,
-            contentDescription = "Gallery & File Manager",
-            tint = VipAmberPrimary,
-            modifier = Modifier.size(20.dp)
-          )
-        }
-        Spacer(modifier = Modifier.width(10.dp))
-        Column {
-          Text(
-            text = "📁 সরাসরি গ্যালারি ও ফাইল ম্যানেজারে সংরক্ষিত",
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Bold,
-            color = VipAmberPrimary
-          )
-          Text(
-            text = "সব ভিডিও স্বয়ংক্রিয়ভাবে ফোনের Gallery ও Movies/VidMax ফোল্ডারে সেভ হয়।",
-            fontSize = 11.sp,
-            color = if (isDark) Color(0xFFA5ABB8) else Color(0xFF6B7280)
-          )
-        }
-      }
-    }
+    Spacer(modifier = Modifier.height(6.dp))
 
     Spacer(modifier = Modifier.height(14.dp))
 
@@ -525,10 +481,13 @@ private fun DownloadItemRow(
               }
             }
             Spacer(modifier = Modifier.width(6.dp))
+            PlatformBrandIcon(platform = item.platform, size = 16.dp)
+            Spacer(modifier = Modifier.width(4.dp))
             Text(
               text = item.platform,
               fontSize = 11.sp,
-              color = if (isDark) Color(0xFF9EA3B0) else Color(0xFF757575)
+              fontWeight = FontWeight.Medium,
+              color = if (isDark) Color(0xFFCAD0E0) else Color(0xFF4B5563)
             )
             Spacer(modifier = Modifier.width(6.dp))
             Text(
