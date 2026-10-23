@@ -135,16 +135,6 @@ class DownloadEngine(
             }
           }
 
-          // Apply the optional metadata marker only when the user enabled the shield.
-          if (item.isShielded && !isAudio) {
-            val salt = ByteArray(128)
-            java.security.SecureRandom().nextBytes(salt)
-            val payload = "TIKTOK_HOOK_INTRO_TRENDING_AUDIO_MIX_CAPTION_FILTER_TRIM_V2_" +
-              java.util.Base64.getEncoder().encodeToString(salt)
-            val mp4FreeBox = createMp4FreeBox(payload)
-            outputStream.write(mp4FreeBox)
-          }
-
           outputStream.flush()
           outputStream.close()
 

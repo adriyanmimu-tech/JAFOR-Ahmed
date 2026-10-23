@@ -508,8 +508,8 @@ fun BrowserScreen(
           .align(Alignment.BottomCenter)
           .padding(start = 16.dp, end = 16.dp, bottom = 150.dp)
           .clip(RoundedCornerShape(16.dp))
-          .background(Color(0xFF131522))
-          .border(1.5.dp, VipAmberPrimary, RoundedCornerShape(16.dp))
+          .background(if (isDark) Color(0xF4071813) else Color(0xF6FFFFFF))
+          .border(1.5.dp, Color(0xFF10B981), RoundedCornerShape(16.dp))
           .clickable {
             viewModel.extractMedia(streamUrl)
             viewModel.setTab(0)
@@ -525,28 +525,28 @@ fun BrowserScreen(
             Icon(
               imageVector = Icons.Default.Download,
               contentDescription = "Real Video Found",
-              tint = VipAmberPrimary,
+              tint = Color(0xFF10B981),
               modifier = Modifier.size(24.dp)
             )
             Spacer(modifier = Modifier.width(10.dp))
             Column {
               Text(
-                text = "🎯 Direct Video Stream Detected!",
+                text = "⚡ 1080p HD Video Stream Detected!",
                 fontWeight = FontWeight.Bold,
                 fontSize = 13.sp,
-                color = VipAmberPrimary
+                color = Color(0xFF10B981)
               )
               Text(
-                text = "Tap to download the full HD video stream",
+                text = "Tap to download the full HD video stream directly",
                 fontSize = 11.sp,
-                color = Color.LightGray
+                color = if (isDark) Color.LightGray else Color.DarkGray
               )
             }
           }
           Box(
             modifier = Modifier
-              .background(VipAmberPrimary, RoundedCornerShape(8.dp))
-              .padding(horizontal = 10.dp, vertical = 6.dp)
+              .background(Color(0xFF10B981), RoundedCornerShape(8.dp))
+              .padding(horizontal = 12.dp, vertical = 7.dp)
           ) {
             Text(
               text = "Download",
@@ -567,7 +567,7 @@ fun BrowserScreen(
         viewModel.extractMedia(streamToDownload)
         viewModel.setTab(0) // Return to home to display the quality modal
       },
-      containerColor = VipAmberPrimary,
+      containerColor = Color(0xFF10B981),
       contentColor = Color.Black,
       shape = CircleShape,
       modifier = Modifier
@@ -586,7 +586,7 @@ fun BrowserScreen(
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
-          text = if (detectedVideoStreamUrl != null) "Download Sniffed Video" else "Sniff & Download",
+          text = if (detectedVideoStreamUrl != null) "Download 1080p Video ⚡" else "Sniff & Download ⚡",
           fontWeight = FontWeight.Bold,
           fontSize = 14.sp
         )

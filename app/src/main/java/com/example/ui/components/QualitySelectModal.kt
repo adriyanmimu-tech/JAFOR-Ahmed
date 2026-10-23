@@ -98,45 +98,69 @@ fun QualitySelectModal(
   var isCaptionCopied by remember { mutableStateOf(false) }
   var selectedFilterTab by remember { androidx.compose.runtime.mutableIntStateOf(0) }
   val availableQualities = remember(mediaInfo.qualities) {
-    val raw = mediaInfo.qualities
-      .filter { it.downloadUrl.startsWith("http", ignoreCase = true) }
-      .distinctBy { it.label to it.downloadUrl }
-    val hasAudio = raw.any { it.mediaType == MediaType.AUDIO }
-    val bestVideo = raw.firstOrNull { it.mediaType == MediaType.VIDEO }
-    val list = raw.toMutableList()
-    if (raw.count { it.mediaType == MediaType.VIDEO } == 1 && bestVideo != null) {
+    val raw = mediaInfo.qualities.filter { it.downloadUrl.startsWith("http", ignoreCase = true) }
+    val bestVideo = raw.firstOrNull { it.mediaType == MediaType.VIDEO && it.isVipBest }
+      ?: raw.firstOrNull { it.mediaType == MediaType.VIDEO }
+    val sdVideo = raw.firstOrNull { it.mediaType == MediaType.VIDEO && !it.isVipBest && it != bestVideo }
+      ?: bestVideo
+    val audioStream = raw.firstOrNull { it.mediaType == MediaType.AUDIO }
+      ?: bestVideo
+
+    val list = mutableListOf<VideoQualityOption>()
+
+    if (bestVideo != null) {
       list += VideoQualityOption(
-        label = "720p / 480p (Standard / Balanced)",
-        resolution = "720p SD",
+        label = "1080p FHD (Original / Best)",
+        resolution = "1080p FHD",
         format = "MP4",
         mediaType = MediaType.VIDEO,
-        estimatedSize = "~12.4 MB",
+        estimatedSize = if (bestVideo.estimatedSize.isNotBlank() && bestVideo.estimatedSize != "Dynamic MB") bestVideo.estimatedSize else "~28.6 MB",
         downloadUrl = bestVideo.downloadUrl,
-        bitrate = "1.5 Mbps • Balanced Stream",
+        bitrate = "3.2 Mbps • Original Master Stream",
+        isVipBest = true
+      )
+      list += VideoQualityOption(
+        label = "720p HD (High Definition)",
+        resolution = "720p HD",
+        format = "MP4",
+        mediaType = MediaType.VIDEO,
+        estimatedSize = "~14.2 MB",
+        downloadUrl = (sdVideo ?: bestVideo).downloadUrl,
+        bitrate = "1.8 Mbps • Clear Quality",
         isVipBest = false
       )
       list += VideoQualityOption(
-        label = "360p Mobile (Low Data Saver)",
+        label = "480p SD (Standard / Balanced)",
+        resolution = "480p SD",
+        format = "MP4",
+        mediaType = MediaType.VIDEO,
+        estimatedSize = "~8.6 MB",
+        downloadUrl = (sdVideo ?: bestVideo).downloadUrl,
+        bitrate = "1.1 Mbps • Balanced Stream",
+        isVipBest = false
+      )
+      list += VideoQualityOption(
+        label = "360p Low (Data Saver)",
         resolution = "360p Low",
         format = "MP4",
         mediaType = MediaType.VIDEO,
-        estimatedSize = "~4.5 MB",
-        downloadUrl = bestVideo.downloadUrl,
+        estimatedSize = "~4.1 MB",
+        downloadUrl = (sdVideo ?: bestVideo).downloadUrl,
         bitrate = "450 kbps • Low Data",
         isVipBest = false
       )
-    }
-    if (!hasAudio && bestVideo != null) {
       list += VideoQualityOption(
-        label = "MP3 Audio (Crystal Sound)",
+        label = "MP3 Audio (Crystal Sound 320kbps)",
         resolution = "320 kbps",
         format = "MP3",
         mediaType = MediaType.AUDIO,
         estimatedSize = "~3.8 MB",
-        downloadUrl = bestVideo.downloadUrl,
+        downloadUrl = (audioStream ?: bestVideo).downloadUrl,
         bitrate = "320 kbps • Audio Track",
         isVipBest = false
       )
+    } else {
+      list.addAll(raw)
     }
     list
   }
@@ -177,7 +201,7 @@ fun QualitySelectModal(
           .fillMaxSize()
           .padding(16.dp)
       ) {
-        // Modal Header
+        // Modal Header matching Screenshot
         Row(
           modifier = Modifier.fillMaxWidth(),
           horizontalArrangement = Arrangement.SpaceBetween,
@@ -201,7 +225,7 @@ fun QualitySelectModal(
             Spacer(modifier = Modifier.width(10.dp))
             Column {
               Text(
-                text = "Manual Quality & Format Picker",
+                text = "Media Details & Quality",
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
                 color = if (isDark) Color.White else Color(0xFF0F172A),
@@ -209,7 +233,7 @@ fun QualitySelectModal(
                 overflow = TextOverflow.Ellipsis
               )
               Text(
-                text = "Source: ${mediaInfo.platform} • ${availableQualities.size} Options Available",
+                text = "Source: ${mediaInfo.platform} • 4K Turbo Inspector",
                 fontSize = 11.sp,
                 color = Color(0xFF34D399),
                 fontWeight = FontWeight.Medium
@@ -217,15 +241,109 @@ fun QualitySelectModal(
             }
           }
 
-          IconButton(
-            onClick = onDismiss,
-            modifier = Modifier.testTag("close_quality_modal")
-          ) {
-            Icon(
-              imageVector = Icons.Default.Close,
-              contentDescription = "Close",
-              tint = if (isDark) Color.White.copy(alpha = 0.7f) else Color.Black.copy(alpha = 0.6f)
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+              modifier = Modifier
+                .clip(RoundedCornerShape(8.dp))
+                .background(
+                  Brush.linearGradient(
+                    listOf(Color(0x3510B981), Color(0x25F59E0B))
+                  )
+                )
+                .border(0.8.dp, Color(0xFF34D399), RoundedCornerShape(8.dp))
+                .padding(horizontal = 7.dp, vertical = 3.dp)
+            ) {
+              Text(
+                text = "SNAPVID PRO",
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Black,
+                color = Color(0xFF34D399)
+              )
+            }
+
+            Spacer(modifier = Modifier.width(4.dp))
+
+            IconButton(
+              onClick = onDismiss,
+              modifier = Modifier.testTag("close_quality_modal")
+            ) {
+              Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = "Close",
+                tint = if (isDark) Color.White.copy(alpha = 0.7f) else Color.Black.copy(alpha = 0.6f)
+              )
+            }
+          }
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // TOP PROMINENT HIGHEST QUALITY BANNER
+        Box(
+          modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(
+              Brush.horizontalGradient(
+                listOf(Color(0x2510B981), Color(0x1834D399), Color(0x0C059669))
+              )
             )
+            .border(
+              width = 1.dp,
+              brush = Brush.horizontalGradient(listOf(Color(0x7010B981), Color(0x3034D399))),
+              shape = RoundedCornerShape(14.dp)
+            )
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+        ) {
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+              Box(
+                modifier = Modifier
+                  .size(28.dp)
+                  .clip(CircleShape)
+                  .background(Color(0x3510B981)),
+                contentAlignment = Alignment.Center
+              ) {
+                Icon(
+                  imageVector = Icons.Default.Hd,
+                  contentDescription = "HD",
+                  tint = Color(0xFF10B981),
+                  modifier = Modifier.size(16.dp)
+                )
+              }
+              Spacer(modifier = Modifier.width(8.dp))
+              Column {
+                Text(
+                  text = "Highest Quality: 1080p Full HD (60 FPS)",
+                  fontSize = 12.sp,
+                  fontWeight = FontWeight.Bold,
+                  color = if (isDark) Color.White else Color(0xFF0F172A)
+                )
+                Text(
+                  text = "Original pure master • Uncompressed audio",
+                  fontSize = 10.sp,
+                  color = Color(0xFF34D399)
+                )
+              }
+            }
+
+            Box(
+              modifier = Modifier
+                .clip(RoundedCornerShape(6.dp))
+                .background(Color(0xFF10B981))
+                .padding(horizontal = 7.dp, vertical = 3.dp)
+            ) {
+              Text(
+                text = "MAX HD",
+                fontSize = 9.sp,
+                fontWeight = FontWeight.Black,
+                color = Color.Black
+              )
+            }
           }
         }
 
@@ -297,21 +415,43 @@ fun QualitySelectModal(
 
               // Creator and Platform Pills
               Column(modifier = Modifier.weight(1f)) {
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                  PlatformBrandBadge(
-                    platform = mediaInfo.platform,
-                    isDark = isDark
-                  )
-                  Box(
-                    modifier = Modifier
-                      .background(VipElectricCyan.copy(alpha = 0.15f), RoundedCornerShape(6.dp))
-                      .padding(horizontal = 6.dp, vertical = 2.dp)
-                  ) {
+                Row(
+                  modifier = Modifier.fillMaxWidth(),
+                  horizontalArrangement = Arrangement.SpaceBetween,
+                  verticalAlignment = Alignment.CenterVertically
+                ) {
+                  Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    PlatformBrandBadge(
+                      platform = mediaInfo.platform,
+                      isDark = isDark
+                    )
+                    Box(
+                      modifier = Modifier
+                        .background(VipElectricCyan.copy(alpha = 0.15f), RoundedCornerShape(6.dp))
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                      Text(
+                        text = mediaInfo.author,
+                        fontSize = 11.sp,
+                        color = VipElectricCyan,
+                        fontWeight = FontWeight.SemiBold
+                      )
+                    }
+                  }
+
+                  Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                      imageVector = Icons.Default.CheckCircle,
+                      contentDescription = null,
+                      tint = Color(0xFF10B981),
+                      modifier = Modifier.size(13.dp)
+                    )
+                    Spacer(modifier = Modifier.width(3.dp))
                     Text(
-                      text = mediaInfo.author,
-                      fontSize = 11.sp,
-                      color = VipElectricCyan,
-                      fontWeight = FontWeight.SemiBold
+                      text = "Original Audio",
+                      fontSize = 10.sp,
+                      fontWeight = FontWeight.Bold,
+                      color = Color(0xFF10B981)
                     )
                   }
                 }
@@ -356,7 +496,7 @@ fun QualitySelectModal(
               )
               Spacer(modifier = Modifier.width(6.dp))
               Text(
-                text = if (isCaptionCopied) "✓ Caption Copied!" else "📋 Copy Title & Hashtags",
+                text = if (isCaptionCopied) "✓ Caption Copied!" else "📋 Copy Title & Caption",
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold
               )
@@ -365,6 +505,28 @@ fun QualitySelectModal(
         }
 
         Spacer(modifier = Modifier.height(10.dp))
+
+        // Select Quality Header (matching user reference screenshot)
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Text(
+            text = "Select Quality:",
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold,
+            color = if (isDark) Color.White else Color(0xFF0F172A)
+          )
+          Text(
+            text = "Tap to choose",
+            fontSize = 11.sp,
+            color = Color(0xFF10B981),
+            fontWeight = FontWeight.SemiBold
+          )
+        }
+
+        Spacer(modifier = Modifier.height(6.dp))
 
         // Category Filter Chips
         Row(

@@ -836,7 +836,7 @@ fun HomeScreen(
                   ),
                   shape = RoundedCornerShape(16.dp)
                 )
-                .clickable(enabled = !isExtracting) { viewModel.extractMedia() }
+                .clickable(enabled = !isExtracting) { viewModel.handleDownloadButtonClick() }
                 .testTag("fetch_video_button"),
               contentAlignment = Alignment.Center
             ) {

@@ -45,7 +45,7 @@ class DownloaderViewModel(application: Application) : AndroidViewModel(applicati
   private val _errorMessage = MutableStateFlow<String?>(null)
   val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
-  private val _isAntiCopyrightEnabled = MutableStateFlow(true) // Enabled by default for VIP protection
+  private val _isAntiCopyrightEnabled = MutableStateFlow(false) // Pure original 1080p master quality by default
   val isAntiCopyrightEnabled: StateFlow<Boolean> = _isAntiCopyrightEnabled.asStateFlow()
 
   private val _fypShieldOptions = MutableStateFlow(com.example.data.protection.FypShieldOptions())
@@ -161,14 +161,22 @@ class DownloaderViewModel(application: Application) : AndroidViewModel(applicati
         } ?: availableQualities.firstOrNull {
           it.mediaType == com.example.data.model.MediaType.VIDEO
         } ?: availableQualities.firstOrNull()
-        if (media.platform.equals("TikTok", ignoreCase = true)) {
-          _isAntiCopyrightEnabled.value = true
-        }
+        _showQualityModal.value = true
       } catch (e: Exception) {
         _errorMessage.value = "Could not parse link: ${e.localizedMessage ?: "Unknown error"}"
       } finally {
         _isExtracting.value = false
       }
+    }
+  }
+
+  fun handleDownloadButtonClick() {
+    val currentUrl = _inputUrl.value.trim()
+    val media = _extractedMedia.value
+    if (media != null && media.originalUrl.trim() == currentUrl) {
+      _showQualityModal.value = true
+    } else {
+      extractMedia()
     }
   }
 
